@@ -1,0 +1,15 @@
+{
+  "name": "paper2lecture-notes",
+  "description": "Claude Code skills for turning research papers into self-contained, professionally typeset lecture notes",
+  "owner": {
+    "name": "Shiling Liang",
+    "url": "https://github.com/Shiling42"
+  },
+  "plugins": [
+    {
+      "name": "paper-to-lecture-notes",
+      "source": "./",
+      "description": "Expand a terse research paper into self-contained, professionally typeset lecture notes with full proofs, a worked example carried throughout, code-verified numbers, and publication-grade figures."
+    }
+  ]
+}
