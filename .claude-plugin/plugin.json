@@ -1,14 +1,14 @@
 {
-  "name": "paper-to-lecture-notes",
+  "name": "paper2notes",
   "displayName": "Paper to Lecture Notes",
   "description": "Expand a terse research paper into self-contained, professionally typeset lecture notes: from-scratch proofs, a non-degenerate worked example carried throughout, code-verified numbers, and publication-grade figures, gated by a 100-point rubric.",
-  "version": "2.0.0",
+  "version": "2.1.0",
   "author": {
     "name": "Shiling Liang",
     "url": "https://github.com/Shiling42"
   },
-  "homepage": "https://github.com/Shiling42/paper2lecture-notes",
-  "repository": "https://github.com/Shiling42/paper2lecture-notes",
+  "homepage": "https://github.com/Shiling42/paper2notes",
+  "repository": "https://github.com/Shiling42/paper2notes",
   "license": "MIT",
   "keywords": ["lecture-notes", "latex", "pedagogy", "physics", "tikz", "academic-writing"]
 }

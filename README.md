@@ -11,15 +11,15 @@ Distilled from a real run: a terse ~11-page PRX paper expanded into a 131-page t
 **Plugin (recommended)** — inside Claude Code:
 
 ```
-/plugin marketplace add Shiling42/paper2lecture-notes
-/plugin install paper-to-lecture-notes@paper2lecture-notes
+/plugin marketplace add Shiling42/paper2notes
+/plugin install paper2notes@paper2notes
 ```
 
 **Manual** — copy the skill into your personal skills directory:
 
 ```bash
-git clone https://github.com/Shiling42/paper2lecture-notes.git
-cp -R paper2lecture-notes/skills/paper-to-lecture-notes ~/.claude/skills/
+git clone https://github.com/Shiling42/paper2notes.git
+cp -R paper2notes/skills/paper2notes ~/.claude/skills/
 ```
 
 ## Usage
@@ -30,7 +30,7 @@ Just ask in natural language — the skill triggers on intent:
 >
 > make this result readable for beginning grad students, with full proofs
 
-Starting a fresh paper? Open [`skills/paper-to-lecture-notes/references/new_paper_checklist.md`](skills/paper-to-lecture-notes/references/new_paper_checklist.md) first — it walks through every field to adapt, including the non-degeneracy constraint for your running example.
+Starting a fresh paper? Open [`skills/paper2notes/references/new_paper_checklist.md`](skills/paper2notes/references/new_paper_checklist.md) first — it walks through every field to adapt, including the non-degeneracy constraint for your running example.
 
 The heavy build runs as a multi-agent pipeline (Scaffold → Example → Draft → Verify → Typeset → Figures → Referee) with two knobs:
 
@@ -40,7 +40,7 @@ The heavy build runs as a multi-agent pipeline (Scaffold → Example → Draft �
 ## What's inside
 
 ```
-skills/paper-to-lecture-notes/
+skills/paper2notes/
 ├── SKILL.md                            the operator's map: a 9-phase procedure
 └── references/
     ├── acceptance_rubric.md            100-point rubric + six hard gates that define "done"

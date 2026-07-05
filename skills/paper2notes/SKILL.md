@@ -1,5 +1,5 @@
 ---
-name: paper-to-lecture-notes
+name: paper2notes
 description: Expand a terse research paper or dense notes into self-contained, professionally typeset lecture notes with full from-scratch proofs, a non-degenerate worked example carried throughout, the Palatino / tcolorbox typesetting, and reusable TikZ figure techniques. Use when the user wants to turn a paper into lecture/teaching notes, make a dense result readable or self-contained, or asks for a pedagogical expansion of a paper.
 ---
 

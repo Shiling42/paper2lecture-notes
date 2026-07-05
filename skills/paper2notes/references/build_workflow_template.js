@@ -99,7 +99,7 @@
 
 // `meta` MUST be a pure literal (the runtime reads it statically before running).
 export const meta = {
-  name: 'paper-to-lecture-notes-build',
+  name: 'paper2notes-build',
   description:
     'Expand a terse paper / dense notes into self-contained, fully-proved, professionally typeset lecture notes, adversarially verified against a machine-checked numbers ground-truth and an acceptance rubric',
   phases: [
@@ -136,7 +136,7 @@ const A = (typeof args === 'object' && args) ? args : {}
 //        builds, or the Typeset phase. Light output is DRAFT GRADE — rubric
 //        compliance not claimed.
 const MODE = A.mode === 'light' ? 'light' : 'full'
-// SKILLREF : OPTIONAL absolute path to the paper-to-lecture-notes skill package
+// SKILLREF : OPTIONAL absolute path to the paper2notes skill package
 //        root (the directory containing SKILL.md and references/). When set:
 //        - Phase A ADAPTS the shipped scaffold templates in
 //          references/scaffold/ instead of regenerating them from prose;

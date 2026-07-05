@@ -1,5 +1,9 @@
 # Changelog
 
+## 2.1.0 — 2026-07-05
+
+- Renamed skill and repository to `paper2notes` (previously `paper-to-lecture-notes` in the `paper2lecture-notes` repo)
+
 ## 2.0.0 — 2026-07-05
 
 First public release, after a full multi-agent audit of the original skill (50 findings, 47 confirmed and fixed, every fix compile/render/parse-verified) plus seven enhancements:
