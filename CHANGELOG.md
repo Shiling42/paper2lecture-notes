@@ -1,5 +1,10 @@
 # Changelog
 
+## 2.1.1 — 2026-07-06
+
+- Scaffold scripts now honor a `TEXBIN` environment variable in their pdflatex probe (PATH → `$TEXBIN` → MacTeX → TeX Live glob)
+- Added `colortbl` to the professional preamble and both preamble specs in the workflow template — the styled results table (archetype I) now compiles under the house preambles without extra packages
+
 ## 2.1.0 — 2026-07-05
 
 - Renamed skill and repository to `paper2notes` (previously `paper-to-lecture-notes` in the `paper2lecture-notes` repo)

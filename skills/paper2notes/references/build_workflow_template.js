@@ -582,7 +582,7 @@ ${STANDARDS}
 
 DELIVERABLES:
 1. ${OUT}/preamble.tex — a robust 'report'-class preamble. Use amsmath, amssymb, amsthm,
-   mathtools, graphicx, xcolor, hyperref, booktabs, enumitem, tcolorbox, and tikz with the
+   mathtools, graphicx, xcolor, hyperref, booktabs, colortbl, enumitem, tcolorbox, and tikz with the
    libraries you need (arrows.meta, calc, positioning, decorations.pathmorphing, backgrounds,
    fit, patterns, shapes.geometric, plotmarks). Define theorem environments (theorem,
    proposition, lemma, corollary, definition, example, remark) numbered by chapter. Define the
@@ -846,7 +846,7 @@ ${SKILLREF ? `   Use the shipped, compile-tested ${SKILLREF}/references/preamble
    - PACKAGE STACK IN THIS LOAD ORDER: fontenc[T1], inputenc[utf8]; amsmath, amssymb, mathtools,
      amsthm; FONTS: tgheros (sans), then newpxtext (Palatino-like serif body), then newpxmath
      (AFTER newpxtext), then bm, beramono[scaled=0.86]; microtype LATE (after all fonts);
-     geometry, graphicx, xcolor, booktabs, enumitem, caption; tcolorbox[most]; tikz (+ the
+     geometry, graphicx, xcolor, booktabs, colortbl, enumitem, caption; tcolorbox[most]; tikz (+ the
      libraries the chapters use); titlesec; fancyhdr; needspace; hyperref LAST — and ALL
      \\hypersetup / palette / titlesec / fancyhdr / theorem styling AFTER hyperref. Font
      fallbacks if newpx/tgheros are missing on this TeX: libertinus, else lmodern.

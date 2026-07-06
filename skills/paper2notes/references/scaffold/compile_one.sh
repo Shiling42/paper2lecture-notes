@@ -28,6 +28,9 @@ find_pdflatex() {
   if command -v pdflatex >/dev/null 2>&1; then
     command -v pdflatex; return 0
   fi
+  if [ -n "${TEXBIN:-}" ] && [ -x "${TEXBIN}/pdflatex" ]; then  # operator hint (env var)
+    echo "${TEXBIN}/pdflatex"; return 0
+  fi
   if [ -x "/Library/TeX/texbin/pdflatex" ]; then          # macOS MacTeX
     echo "/Library/TeX/texbin/pdflatex"; return 0
   fi
@@ -38,7 +41,7 @@ find_pdflatex() {
   return 1
 }
 PDFLATEX="$(find_pdflatex)" || {
-  echo "ERROR: pdflatex not found (tried PATH, /Library/TeX/texbin, /usr/local/texlive/*/bin/*)." >&2
+  echo "ERROR: pdflatex not found (tried PATH, $TEXBIN, /Library/TeX/texbin, /usr/local/texlive/*/bin/*)." >&2
   exit 1
 }
 
