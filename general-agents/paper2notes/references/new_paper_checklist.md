@@ -32,7 +32,7 @@ the whole pipeline.
 ## 4. Copy the scaffold
 
 Copy `references/scaffold/` → your project directory: `master.tex`,
-`compile_one.sh`, `build_all.sh`, `check_figure.sh`, and
+`compile_one.sh`, `build_all.sh`, `check_figure.sh`, `clean.sh`, and
 `contract_template.md` (rename to `contract.md` and fill every `<FILL IN>`
 slot). Fill `master.tex`'s REPLACE-FOR-YOUR-PAPER title/author/subtitle slots.
 The scripts run from the project directory and probe for `pdflatex`

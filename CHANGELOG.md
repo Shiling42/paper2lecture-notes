@@ -1,5 +1,9 @@
 # Changelog
 
+## 2.3.1 — 2026-07-07
+
+- Added `references/scaffold/clean.sh` — whitelist-based end-of-build housekeeping (removes LaTeX aux files, `_single_*` compile wrappers, root-level render PNGs, `typeset_sandbox/`, pycache/.DS_Store; always keeps sources, `numbers.md`, `code/`, `figs/`, `*.bbl`, the backup preamble, and the final PDF; dry-run by default, refuses to run outside a lecture-notes project). Wired into the workflow's final-build step, both SKILL.md editions, and the new-paper checklist.
+
 ## 2.3.0 — 2026-07-07
 
 **Section I redesign.** The notes now open with a PRL-style standalone article, written LAST by a new **Synthesis** stage (between Assemble and Typeset in the workflow; Phase D2 in the general-agents port): physics-first storytelling with every major theorem formally stated (no proofs) in a complete logical chain, working definitions with pointers to rigorous versions, a theorem-dependency DAG figure, and reader-type reading routes. Success test: a reader of Section I alone can judge the paper's central claim. Chapters marked `synthesis: true` are skipped by drafting and synthesized from the finished book. Rubric criteria folded into the Self-containedness and Pedagogical-flow dimensions — the hard-gate set stays at six. Light mode never trims Synthesis.

@@ -606,10 +606,10 @@ renders) ships with poppler (poppler-utils on Linux).
 ${SKILLREF ? `
 TEMPLATES: the skill package at ${SKILLREF} ships compile-tested scaffold templates in
 ${SKILLREF}/references/scaffold/ — master.tex, compile_one.sh, build_all.sh,
-contract_template.md, check_figure.sh. ADAPT those (fill in title, author, the chapter
+contract_template.md, check_figure.sh, clean.sh. ADAPT those (fill in title, author, the chapter
 list, and the project paths) instead of regenerating the corresponding deliverables from
 the prose specs below; the prose specs then serve as your acceptance criteria. Copy
-check_figure.sh into ${OUT} as-is for later figure checks.
+check_figure.sh and clean.sh into ${OUT} as-is (figure checks; end-of-build housekeeping).
 ` : ''}
 ${STANDARDS}
 
@@ -1137,7 +1137,13 @@ if (MODE === 'light') {
 // Final clean build (idempotent; only fixes build-breakers).
 const finalBuild = await agent(`Do the FINAL build of ${MASTER}: run  bash "${OUT}/build_all.sh"
 (three passes). Confirm it compiles clean; report the page count and any residual warnings. Do not
-change content except to fix a build-breaking error. Return the final status and page count.`,
+change content except to fix a build-breaking error. THEN tidy the project: run
+  bash "${OUT}/clean.sh" --yes
+(whitelist housekeeping: removes LaTeX aux files, _single_* wrappers, root-level render PNGs,
+typeset_sandbox/, pycache/.DS_Store; keeps sources, chapters, figs/, code/, numbers.md,
+contract.md, *.bbl, preamble_plain_backup.tex, and the final PDF). If clean.sh is missing
+(scaffold predates it), skip tidying — never improvise deletions. Report what was removed.
+Return the final status and page count.`,
   { label: 'final-build', phase: 'Referee', schema: FIX_SCHEMA })
 
 return {

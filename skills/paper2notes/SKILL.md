@@ -52,7 +52,7 @@ layer** — are the heavy build, best run by the multi-agent workflow
 3. **Scaffold + one ground-truth numbers file from runnable code.** Create the project
    (`report` class, `preamble.tex`, master, `compile_one.sh`, `build_all.sh`, `contract.md`)
    — start from the shipped templates in `references/scaffold/` (`master.tex`,
-   `compile_one.sh`, `build_all.sh`, `contract_template.md`, `check_figure.sh`) and walk
+   `compile_one.sh`, `build_all.sh`, `contract_template.md`, `check_figure.sh`, `clean.sh`) and walk
    `references/new_paper_checklist.md`; adapt the templates rather than regenerating them
    from prose (the Phase A DELIVERABLES block of `references/build_workflow_template.js`
    remains the canonical content spec if you must scaffold by hand without them).
@@ -132,9 +132,12 @@ layer** — are the heavy build, best run by the multi-agent workflow
    score clears the threshold. Gates are the real exit condition; the score guards quality
    above them.
 
-10. **Reproduce every number and finish.** Re-run every cited script; confirm
+10. **Reproduce every number, finish, and tidy.** Re-run every cited script; confirm
    `numbers.md` ↔ chapters ↔ scripts all agree. Do a final figure pass, fix any missing
-   bibliography / undefined refs, and run the final clean three-pass build.
+   bibliography / undefined refs, and run the final clean three-pass build. Then run
+    `clean.sh --yes` (shipped in `references/scaffold/`): whitelist housekeeping that removes
+    LaTeX aux files, `_single_*` wrappers, render PNGs, and `typeset_sandbox/`, while keeping
+    sources, `numbers.md`, `code/`, `figs/`, `preamble_plain_backup.tex`, and the final PDF.
 
 ## Load-bearing principles
 

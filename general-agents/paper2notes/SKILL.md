@@ -23,7 +23,7 @@ The deep material lives in `references/` next to this file (all agent-agnostic):
 | `references/typesetting_guide.md` | The professional look: layering discipline, package stack, theorem-box recipe |
 | `references/preamble_lecture_notes.tex` | Compile-tested professional preamble, ready to swap in |
 | `references/figure_techniques.md` | 11 figure archetypes + the visual-check loop + numbers→figures track |
-| `references/scaffold/` | Verified templates: `master.tex`, `compile_one.sh`, `build_all.sh`, `contract_template.md`, `check_figure.sh` |
+| `references/scaffold/` | Verified templates: `master.tex`, `compile_one.sh`, `build_all.sh`, `contract_template.md`, `check_figure.sh`, `clean.sh` |
 | `references/new_paper_checklist.md` | Walk this when pointing the method at a new paper |
 | `references/build_workflow_template.js` | The Claude Code Workflow original — the reference spec this skill mirrors phase-by-phase |
 
@@ -247,7 +247,7 @@ Spawn **scaffold** with: create `OUT/` project structure; ADAPT the shipped temp
 chapter; **uncomment/add `\appendix` + `\input{chapters/appendices}` after the chapter
 inputs** — the template ships these lines commented out; stub all chapter files AND
 `chapters/appendices.tex` so the master compiles NOW), `compile_one.sh`, `build_all.sh`,
-`check_figure.sh` (copy as-is), `contract_template.md` → `OUT/contract.md` filled in:
+`check_figure.sh` and `clean.sh` (copy as-is), `contract_template.md` → `OUT/contract.md` filled in:
 exact macro list (mirror the source paper's preamble), theorem environments, label
 conventions (`ch:` `thm:` `eq:` `fig:`), the global sign/normalization conventions incl.
 the KEY CORRECTNESS TRAP, the palette, the numbers-as-figures policy, **the figure-file
@@ -455,7 +455,10 @@ Per round `N` (1, 2, 3):
 ### Phase H — Final reproduction pass (1 worker)
 
 Re-run every script cited in `numbers.md`; confirm script ↔ numbers.md ↔ chapters agree.
-Final `build_all.sh`: clean, zero undefined refs/citations. Result:
+Final `build_all.sh`: clean, zero undefined refs/citations. Then tidy: `bash "OUT/clean.sh" --yes`
+(whitelist housekeeping — removes LaTeX aux, `_single_*` wrappers, root render PNGs,
+`typeset_sandbox/`; keeps sources, `numbers.md`, `code/`, `figs/`, the backup preamble, the
+final PDF; if the script is missing, skip — never improvise deletions). Result:
 `_agents/repro.result.md` (FIX format). Then write the final report into `BUILD_STATE.md`
 AND tell the user: mode, accepted verdict, final score + gates, typeset status
 (professional vs plain), page count, PDF path, and any human-delegated checks (§7).
