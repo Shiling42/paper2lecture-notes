@@ -1,6 +1,6 @@
 ---
 name: paper2notes
-description: Expand a terse research paper or dense notes into self-contained, professionally typeset lecture notes — full from-scratch proofs, a non-degenerate worked example carried through every chapter, code-verified numbers (every key number also shown in a figure or styled table), and publication-grade LaTeX, gated by a 100-point acceptance rubric. Orchestrates a multi-agent build by spawning worker subprocesses; needs only shell + files + Python + TeX. Use when the user wants to turn a paper into lecture/teaching notes (讲义), make a dense result readable and self-contained, or asks for a pedagogical expansion. Not for quick summaries, literature reviews, slides, posters, or submission polishing.
+description: Expand a terse research paper or dense notes into self-contained, professionally typeset lecture notes — full from-scratch proofs, a non-degenerate worked example carried through every chapter, code-verified numbers (every key number also shown in a figure or styled table), a lookup-verified bibliography with a literature-positioning epilogue section (inherited or search-discovered, never fabricated), and publication-grade LaTeX, gated by a 100-point acceptance rubric. Orchestrates a multi-agent build by spawning worker subprocesses; needs only shell + files + Python + TeX. Use when the user wants to turn a paper into lecture/teaching notes (讲义), make a dense result readable and self-contained, ask for a pedagogical expansion, or expand a draft into notes that also position its result in the literature. Not for quick summaries, standalone literature reviews, slides, posters, or submission polishing.
 ---
 
 # paper2notes — Multi-Agent Lecture-Notes Build
@@ -11,9 +11,11 @@ proving, reviewing, typesetting, refereeing. Do no drafting/proving/reviewing yo
 
 The method: every load-bearing concept built from scratch, every theorem given a gap-free
 proof, ONE non-degenerate worked example carried through every core chapter, every quoted
-number traceable to runnable code (and also shown in a figure or styled table), the
-professional Palatino/tcolorbox look layered on at the end — all gated by a strict referee
-against a 100-point rubric with six hard gates.
+number traceable to runnable code (and also shown in a figure or styled table), every
+citation traceable to a lookup-verified ledger (`citations.md` + `refs.bib` — the
+literature analogue of `numbers.md`; positioning lives only in the epilogue's Context
+section), the professional Palatino/tcolorbox look layered on at the end — all gated by a
+strict referee against a 100-point rubric with six hard gates.
 
 The deep material lives in `references/` next to this file (all agent-agnostic):
 
@@ -22,7 +24,7 @@ The deep material lives in `references/` next to this file (all agent-agnostic):
 | `references/acceptance_rubric.md` | The definition of "done": 100 points / 8 dimensions / 6 hard gates |
 | `references/typesetting_guide.md` | The professional look: layering discipline, package stack, theorem-box recipe |
 | `references/preamble_lecture_notes.tex` | Compile-tested professional preamble, ready to swap in |
-| `references/figure_techniques.md` | 11 figure archetypes + the visual-check loop + numbers→figures track |
+| `references/figure_techniques.md` | 12 figure archetypes + the visual-check loop + numbers→figures track |
 | `references/scaffold/` | Verified templates: `master.tex`, `compile_one.sh`, `build_all.sh`, `contract_template.md`, `check_figure.sh`, `clean.sh` |
 | `references/new_paper_checklist.md` | Walk this when pointing the method at a new paper |
 | `references/build_workflow_template.js` | The Claude Code Workflow original — the reference spec this skill mirrors phase-by-phase |
@@ -52,7 +54,12 @@ sequentially (`MAXPAR: 1`) — you lose wall-clock speed, not correctness or ind
    worker is pointed at it.
 4. **Refuse to start the build while any `<FILL IN: …>` placeholder remains** — the same
    fail-fast rule the Workflow original enforces before spawning agents.
-5. Choose `MODE: full` (rubric-gated) or `light` (cheap draft pass; §6) with the user.
+5. Choose `MODE: full` (rubric-gated) or `light` (cheap draft pass; §6) with the user,
+   and the `BIB` mode (default `auto`; suggest `discover` for a draft with thin or no
+   bibliography, `off` only if the user wants a citation-free document). Discovery and
+   verification need network access from workers (keyless: arXiv API / Crossref /
+   OpenAlex); without it, Phase B2 degrades to inherit-only and records the rest under
+   `[Gaps]` — never from memory.
 
 ## 2. The Job Card
 
@@ -61,6 +68,11 @@ sequentially (`MAXPAR: 1`) — you lose wall-clock speed, not correctness or ind
 
 ## Knobs
 MODE: full            # full | light   (§6)
+BIB: auto             # auto | inherit | discover | off — the literature layer (§Phase B2).
+                      # inherit = ledger from the source's own bibliography only;
+                      # discover = also search-fill load-bearing gaps (drafts with thin/no
+                      # bibliography); auto = inherit if the source has a usable
+                      # bibliography, else discover; off = the notes cite nothing.
 SKILL: <FILL IN: absolute path to this SKILL.md>
 REFS: <FILL IN: absolute path to the skill's references/ directory>
 MAXPAR: 4             # TOTAL workers in flight at any moment, across ALL overlapping
@@ -101,6 +113,12 @@ PALETTE:  navy=#1f3b73, mpred=#c0392b, teal=#16887b, gold=#b8860b, inkgray=#4a4a
 7. NUMBERS-AS-FIGURES — every load-bearing quantity in numbers.md must ALSO appear in at
    least one figure or professionally typeset table; a bare inline numeral is never the
    only presentation of a key result.
+8. ONE SOURCE OF TRUTH FOR CITATIONS (when BIB ≠ off) — \cite only keys that exist in
+   OUT/citations.md + OUT/refs.bib (every entry identifier-verified by an actual lookup).
+   NEVER cite from memory: a missing source means the text stays uncited and the ledger's
+   [Gaps] section records it. Positioning lives ONLY in the epilogue's "Context and
+   positioning" section — never in the Preface or Section I; no novelty-selling or
+   citation politics anywhere.
 
 KEY CORRECTNESS TRAP: <FILL IN: the one convention/sign/index trap in YOUR paper that a
    careless derivation gets wrong. State the correct convention explicitly.>
@@ -114,14 +132,16 @@ KEY CORRECTNESS TRAP: <FILL IN: the one convention/sign/index trap in YOUR paper
  independent ways; plus the required parameter regimes/cases.>
 
 ## Chapters
-| id | num | core | synthesis | title | source | covers | figures |
-|----|-----|------|-----------|-------|--------|--------|---------|
+| id | num | core | synthesis | positioning | title | source | covers | figures |
+|----|-----|------|-----------|-------------|-------|--------|--------|---------|
 <FILL IN: one row per chapter. core=yes ⇒ the running example MUST appear (hard gate).
  "covers" is the drafting brief — detailed; "source" cites paper sections/line ranges.
  Mark EXACTLY ONE chapter (usually ch0) synthesis=yes: it is EXCLUDED from the Phase C1
  drafting fan-out and written by Phase D2 after assembly; its "covers" field may stay one
  line ("Section I — see Phase D2"). The Preface is NOT a chapter row: it is unnumbered
- front matter that Phase D2 produces by compressing the finished Section I.>
+ front matter that Phase D2 produces by compressing the finished Section I. Mark ONE
+ chapter (usually the epilogue) positioning=yes: when BIB ≠ off its drafter also writes
+ the "Context and positioning" section + the archetype-L literature map (§C1).>
 
 ## Acceptance
 THRESHOLD: 90     # accepted = score ≥ THRESHOLD AND all 6 hard gates green AND 0 blockers
@@ -196,8 +216,8 @@ reused across workers or rounds.** Fixed formats:
 - If it fails again: for a *reviewer lens or figure-reviewer*, record `LENS FAILED` in the
   state file and continue — but never silently treat a dead reviewer as "no findings";
   re-run it later if at all possible. For a *builder* (scaffold / drafter / fixer /
-  appendices / assembler / synthesis writer / preface writer / repro), the phase cannot
-  proceed — diagnose from its stdout/log before continuing.
+  appendices / assembler / synthesis writer / preface writer / literature-builder /
+  repro), the phase cannot proceed — diagnose from its stdout/log before continuing.
 - A well-formed FIX result reporting `compiles: FAIL` blocks its barrier exactly like a
   dead builder: re-dispatch the worker with the failing log excerpt appended to its prompt.
 - The **referee is phase-blocking**: a twice-failed referee means the round did not happen —
@@ -223,7 +243,8 @@ only `compile_one.sh` (unique per-chapter jobnames) is concurrency-safe. Update
 
 ```markdown
 # BUILD_STATE — <TITLE>
-A scaffold [ ]   B numbers [ ] audit [ ] repair [–]   D assemble [ ]   D2 synth [ ] preface [ ]
+A scaffold [ ]   B numbers [ ] audit [ ] repair [–]   B2 literature [ ] audit [ ] repair [–]
+D assemble [ ]   D2 synth [ ] preface [ ]
 C chapters: ch0 [draft|lenses|fixed]  ch1 [...]  (one line per chapter)
 E typeset [ ]    F figures [ ]    G referee: round 0/3, score –, gates –, blockers –
 ## Dispatch log (append-only)
@@ -290,9 +311,46 @@ included and visible in the TOC). Result file: `_agents/scaffold.result.md` (FIX
   `_agents/audit_B_r2.result.md`). **No chapter is drafted while the audit has open
   blockers** — bad ground truth poisons everything downstream.
 
+### Phase B2 — Literature & citations ledger (skipped when `BIB: off`; may run ∥ Phase B)
+
+The literature analogue of Phase B: both ground truths exist before any drafting. May run
+concurrently with Phase B under the MAXPAR cap (they touch disjoint files); sequential is
+equally correct.
+
+- **L1 literature-builder** (1 worker): build `OUT/refs.bib` + `OUT/citations.md`.
+  Resolve the mode (`auto` → inherit if `PAPER` carries a usable bibliography —
+  `\bibliography` line, a `.bib`/`.bbl` next to it, or `\bibitem` entries — else
+  discover; record the resolved mode in the ledger header). INHERIT: carry over the
+  load-bearing subset of the source's own bibliography. DISCOVER: additionally derive
+  search targets from the Job-Card concepts (canonical source + one modern treatment
+  each), the paper's central claims (nearest prior + parallel works, for positioning),
+  and existing expositions of the same material; search via the keyless APIs (arXiv
+  Atom API, Crossref `api.crossref.org/works`, OpenAlex `api.openalex.org/works`) or any
+  installed literature tools. VERIFY EVERY ENTRY (all modes): identifier resolves by an
+  actual lookup (T1), metadata matches (T2); in full mode, T3 claim-support on the
+  positioning-critical entries (read the abstract; confirm the assigned role).
+  `citations.md` sections: `[Header]` (resolved mode, search targets), `[Entries]`
+  (key | identifier | tier | one-line role | where used), `[Positioning]` (UPSTREAM /
+  PARALLEL / DOWNSTREAM-OPEN / EXPOSITIONS, every item keyed — the epilogue's inputs),
+  `[Gaps]` (wanted-but-unverifiable; the text stays uncited there — NEVER fill a gap
+  from memory, including when there is no network access). Do NOT wire the master's
+  bibliography hook (the Phase D assembler does). Result: `_agents/literature.result.md`
+  (FIX format).
+- **L2 independent citation auditor** (1 worker, fresh context): with its OWN fresh
+  lookups, re-resolve EVERY identifier, re-check metadata vs the BibTeX, cross-check
+  ledger ↔ bib key sets (no orphans, no duplicates); full mode: T3 spot-check the
+  `[Positioning]` roles. A fabricated/unresolvable reference, metadata mismatch, key
+  mismatch, or unsupported positioning role is a BLOCKER. Result:
+  `_agents/audit_L.result.md` (FINDINGS format; `NO FINDINGS` allowed).
+- **L3 repairer** (only if L2 found blockers/majors): fix ledger + bib (move anything
+  unverifiable to `[Gaps]`), re-verify by fresh lookups. Result:
+  `_agents/repair_L.result.md` (FIX format). **No chapter is drafted while the citation
+  audit has open blockers** — fabricated references poison every chapter that cites.
+
 ### Phase C — Chapters: draft ∥ → verify (3 lenses ∥) → fix (per chapter)
 
-Once `numbers.md` is frozen, chapters are independent given `contract.md` + `numbers.md`.
+Once `numbers.md` (and, when `BIB ≠ off`, `citations.md`) is frozen, chapters are
+independent given `contract.md` + the ground-truth files.
 
 - **C1 drafting fan-out:** spawn one **drafter** per chapter — EXCEPT the chapter marked
   `synthesis=yes` in the Job Card, which stays a scaffold stub until Phase D2 writes it.
@@ -302,9 +360,18 @@ Once `numbers.md` is frozen, chapters are independent given `contract.md` + `num
   defined at first use, full proofs in the main text, general theorem before example), the
   chapter's Job-Card `covers` brief, the running example with ACTUAL `numbers.md` values
   if `core=yes`, figures per `REFS/figure_techniques.md` (TikZ if whiteboard-drawable,
-  else matplotlib→PDF; check each with `bash "OUT/check_figure.sh"` and LOOK at the PNG).
+  else matplotlib→PDF; check each with `bash "OUT/check_figure.sh"` and LOOK at the PNG);
+  `\cite` only keys present in `OUT/citations.md` (Standards item 8 — a missing source
+  means no citation, not an invented one). The `positioning=yes` drafter (when
+  `BIB ≠ off`) additionally writes the **"Context and positioning" section**: (i) the
+  RESULT vs the research literature — builds-on / sits-beside / adds, every claim about a
+  paper cited from the ledger's `[Positioning]` data; (ii) THESE NOTES vs existing
+  expositions and what they add; plus the archetype-L literature-map figure
+  (`REFS/figure_techniques.md` §1.12), nodes keyed to `refs.bib` — stated plainly, no
+  novelty-selling, no citation politics.
   Must self-check `bash "OUT/compile_one.sh" "OUT/chapters/<id>.tex"` to PASS
-  (concurrency-safe by design — unique per-chapter jobnames). Result:
+  (concurrency-safe by design — unique per-chapter jobnames; single-pass compiles show
+  `\cite` as `[?]` — the full Phase D build settles them). Result:
   `_agents/draft_<id>.result.md` (FIX format).
 - **C2 verification fan-out, per drafted chapter:** spawn THREE lens workers (the core
   adversarial step — never merge them in full mode):
@@ -315,7 +382,9 @@ Once `numbers.md` is frozen, chapters are independent given `contract.md` + `num
     along.
   - **numeric lens** — extract every numeral/vector/claim; check VERBATIM against
     `OUT/numbers.md`; re-run the producing scripts for headline values; flag mismatches,
-    untraceable numbers, wrong signs (expected vs found).
+    untraceable numbers, wrong signs (expected vs found); when `BIB ≠ off`, also check
+    every `\cite` key against `citations.md`/`refs.bib` — an unknown or memory-invented
+    key is a blocker.
   - **pedagogy lens** — read as the Job-Card AUDIENCE: used-before-defined, each Job-Card
     concept genuinely built from scratch (not cited), intuition before algebra, physical
     motivation, general-before-example, any point a student stalls.
@@ -341,7 +410,12 @@ costs wall-clock time.
 - **assembler** (after the barrier): drive `bash "OUT/build_all.sh"` to a CLEAN three-pass
   build of the whole document: undefined refs, duplicate labels, notation drift vs
   `contract.md`, figure paths (copy reused PDFs into `OUT/figs/`), TOC — **confirm the
-  appendices actually appear in the built PDF and its TOC**. Never "simplify"
+  appendices actually appear in the built PDF and its TOC**. When `BIB ≠ off`: **wire the
+  bibliography** — refs.bib next to the master, uncomment/add the
+  `\bibliographystyle{unsrt}` + `\bibliography{refs}` hook lines, and drive the
+  pdflatex/bibtex/pdflatex ×2 cycle (`build_all.sh` auto-detects the uncommented line) to
+  ZERO undefined citations; a `\cite` key missing from the ledger is a chapter defect
+  (fix or drop the cite) — never invent a bib entry to silence it. Never "simplify"
   `preamble.tex` to dodge an error — fix the offending chapter construct. Result:
   `_agents/assemble.result.md` (FIX format, incl. final page count).
 
@@ -481,12 +555,21 @@ changed pages to confirm). Result: `_agents/figfix.result.md` (FIX format).
 Per round `N` (1, 2, 3):
 1. Spawn **referee** (fresh context; the strictest worker): score
    `references/acceptance_rubric.md` — all 8 dimensions with notes, all 6 hard gates
-   honestly (Gate 6 = the Job-Card GATE6 wording), a concrete blocker list. Must
+   honestly (Gate 6 = the Job-Card GATE6 wording; Gate 2 is the WIDENED ground-truth
+   gate: numbers vs `numbers.md` AND, wherever the notes cite, every `\cite` resolving to
+   a verified `citations.md` entry — spot-re-resolve 2–3 identifiers by an actual lookup;
+   a fabricated or unresolvable reference fails the gate), a concrete blocker list. Must
    re-derive ground truth (re-run verifier + audit scripts vs `numbers.md`), run
    `build_all.sh`, skim rendered pages, verify: every theorem fully proved, no
    load-bearing concept merely cited, the running example in every `core` chapter, the
    structural invariant explicit, numbers-as-figures satisfied (violations = blockers
-   under the Visualization dimension — scoring pressure, NOT a seventh gate). Result:
+   under the Visualization dimension — scoring pressure, NOT a seventh gate). When
+   `BIB ≠ off`, also evaluate the `positioning=yes` chapter's **Context and positioning**
+   section (the document's ONLY positioning home; Preface and Section I stay
+   citation-free): both positionings present (result vs literature, notes vs
+   expositions), every claim about a paper cited, the literature-map figure keyed to
+   `refs.bib`, no selling/politics — violations scored under dimensions 5 and 7 and
+   filed as blockers, NOT a seventh gate. Result:
    `_agents/referee_r<N>.result.md` (SCORE format).
 2. Check: **accepted = all 6 gates green AND score ≥ THRESHOLD AND zero blockers.**
    Accepted → Phase H. Out of rounds → record NOT ACCEPTED with outstanding blockers in
@@ -506,10 +589,13 @@ Per round `N` (1, 2, 3):
 ### Phase H — Final reproduction pass (1 worker)
 
 Re-run every script cited in `numbers.md`; confirm script ↔ numbers.md ↔ chapters agree.
+When the notes cite: re-resolve the `citations.md` identifiers and confirm `\cite` keys ↔
+ledger ↔ `refs.bib` agree (zero fabricated or unresolvable references — widened Gate 2).
 Final `build_all.sh`: clean, zero undefined refs/citations. Then tidy: `bash "OUT/clean.sh" --yes`
 (whitelist housekeeping — removes LaTeX aux, `_single_*` wrappers, root render PNGs,
-`typeset_sandbox/`; keeps sources, `numbers.md`, `code/`, `figs/`, the backup preamble, the
-final PDF; if the script is missing, skip — never improvise deletions). Result:
+`typeset_sandbox/`; keeps sources, `numbers.md`, `citations.md`, `refs.bib`, `code/`,
+`figs/`, the backup preamble, the final PDF; if the script is missing, skip — never
+improvise deletions). Result:
 `_agents/repro.result.md` (FIX format). Then write the final report into `BUILD_STATE.md`
 AND tell the user: mode, accepted verdict, final score + gates, typeset status
 (professional vs plain), page count, PDF path, and any human-delegated checks (§7).
@@ -532,9 +618,11 @@ AND tell the user: mode, accepted verdict, final score + gates, typeset status
 
 Cheap first pass for early iteration. Trims: the three C2 lenses collapse into ONE
 combined math+numeric+pedagogy worker per chapter (result:
-`_agents/verify_<id>_all.result.md`); a single referee round; Phase F skipped. **Never
-trims:** Phase B including the independent audit, Phase D2 (Synthesis — Section I +
-Preface, including both verifiers), clean three-pass builds, or Phase E.
+`_agents/verify_<id>_all.result.md`); a single referee round; Phase F skipped; Phase B2's
+T3 claim-support spot-checks. **Never trims:** Phase B including the independent audit,
+Phase B2's ledger build + T1/T2 audit (fabricated references poison everything, in light
+mode too), Phase D2 (Synthesis — Section I + Preface, including both verifiers), clean
+three-pass builds, or Phase E.
 Output is explicitly **draft grade — rubric compliance not claimed**; label it so in the
 final report.
 
@@ -556,11 +644,11 @@ final report.
 
 ---
 
-*Provenance: framework-neutral port of the paper2notes Claude Code skill (v2.3.0,
+*Provenance: framework-neutral port of the paper2notes Claude Code skill (v2.5.0,
 github.com/Shiling42/paper2notes); the phase plan mirrors
-`references/build_workflow_template.js` one-for-one (Scaffold, Example+audit, Draft/
-3-lens-Verify/Fix, Assemble, Synthesis (Section I + Preface), Typeset, Figures,
-Referee-loop, Final). The method was
+`references/build_workflow_template.js` one-for-one (Scaffold, Example+audit ∥
+Literature+audit, Draft/3-lens-Verify/Fix, Assemble, Synthesis (Section I + Preface),
+Typeset, Figures, Referee-loop, Final). The method was
 distilled from a real run that expanded a terse ~11-page PRX paper into a 131-page
 professionally typeset lecture note (clean build, all six hard gates green, referee
 95/100, ~70 agents / ~3.5 h).*

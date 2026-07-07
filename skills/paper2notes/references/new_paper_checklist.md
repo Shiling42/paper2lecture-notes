@@ -63,19 +63,29 @@ defect, not a convenience:
   so a single bug cannot pass into `numbers.md`.
 - **CHAPTERS**: the chapter array (id/num/title/source/covers/figures), with
   the **`core` flags** set on every chapter the running example must appear in
-  (core chapters are hard-gate chapters).
+  (core chapters are hard-gate chapters), and **`positioning: true`** on the one
+  chapter (normally the epilogue) that carries the "Context and positioning"
+  section + the literature-map figure when the literature layer is on.
 - **RUBRIC G6 wording**: the rubric string's non-degeneracy gate, instantiated
   with your step-2 forbidden case.
 
-## 6. Choose the mode: `light` or `full`
+## 6. Choose the knobs: `MODE` and `BIB`
 
-- `light` — cheap first pass: one combined verification lens per chapter,
+- `MODE: light` — cheap first pass: one combined verification lens per chapter,
   a single referee round, no figure-review loop; output is labeled "draft
-  grade — rubric compliance not claimed" (numbers ground-truth, clean builds,
-  the Synthesis stage — Section I and the Preface — and the Typeset phase are
-  never trimmed).
-- `full` — the real thing: three adversarial lenses per chapter, the figure
+  grade — rubric compliance not claimed" (numbers ground-truth, the citations
+  ledger + its audit, clean builds, the Synthesis stage — Section I and the
+  Preface — and the Typeset phase are never trimmed).
+- `MODE: full` — the real thing: three adversarial lenses per chapter, the figure
   review loop, and the referee loop until all hard gates pass.
+- `BIB` — the literature layer: `auto` (default; inherit if the source carries a
+  usable bibliography, else discover), `inherit` (source bibliography only),
+  `discover` (search-fill the load-bearing gaps — the mode for **drafts** with
+  thin or no bibliography), `off` (no citations at all). Every entry is verified
+  by an actual identifier lookup; nothing is ever cited from model memory —
+  unverifiable wants land in the ledger's `[Gaps]` section instead. Positioning
+  content lands ONLY in the epilogue's Context section (the Preface and
+  Section I stay citation-free).
 
 ## 7. Verify TEXBIN / the probe
 

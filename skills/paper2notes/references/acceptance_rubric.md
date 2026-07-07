@@ -29,12 +29,14 @@ Before scoring, confirm these artifacts are on disk (names are conventions, adap
 | `contract.md` | Fixed macros, theorem envs, label/sign conventions, per-chapter division of labor, running-example constraints | `mpemba_lecture_notes/contract.md` |
 | **`numbers.md`** | **Single source of truth for every numeral**, each entry citing the script that produced it | `mpemba_lecture_notes/numbers.md` |
 | `code/` (+ any root verifier) | Runnable scripts that *derive* `numbers.md` | `verify_twotriangle.py`, `code/verify_core.py`, `code/saddle_node.py`, … |
+| **`citations.md`** + `refs.bib` | **Single source of truth for every citation** (literature layer on): each entry with a verified identifier (DOI/arXiv), its verification tier, and its role; plus the `[Positioning]` and `[Gaps]` sections | `mpemba_lecture_notes/citations.md` |
 | `chapters/*.tex` + `preamble.tex` | The notes themselves | `ch0…ch7`, `appendices.tex` |
 | `figs/*.pdf` | Figures (PDF only) | `figs/fig1–5.pdf` + TikZ in chapters |
 | Built PDF + `.log` | The compile evidence | `mpemba_lecture_notes.pdf` (131 pp) |
 
 If `numbers.md` or the generating code is missing, **stop** — the correctness gate cannot
-be evaluated and the run is not gradeable.
+be evaluated and the run is not gradeable. (`citations.md`/`refs.bib` are required only
+when the literature layer is on — i.e. whenever the notes contain any `\cite`.)
 
 ---
 
@@ -49,9 +51,9 @@ referee targets; partial credit is the referee's judgment of how far short the n
 | 2 | **Concept depth** | 15 | Every *named, load-bearing* object the paper merely cites is built from scratch — definition, physical intuition, *and* a small concrete verification (a tiny example, a sanity check, a limiting case). Nothing imported as a black box. |
 | 3 | **Theorem expansion** | 15 | Every theorem / lemma / proposition / corollary has: explicit assumptions, a stated intuition, a **gap-free** step-by-step proof, and an explicit note of *where each assumption is used*. No "it can be shown," no proof-by-citation, no hidden lemma. |
 | 4 | **Worked example & operationality** | **20** | The **primary running example** (non-degenerate — see Gate 6) is carried through *every core chapter*, with **every intermediate number** shown, from raw setup to final answer. At least one instance is small enough to do **fully by hand**. A reader can replicate the whole procedure on a *new* instance from the notes alone (an operational checklist is the ideal deliverable). This is the highest-weighted dimension. |
-| 5 | **Correctness** | 15 | Every numeral matches a re-run of the cited script in `numbers.md`; conventions (index/sign/orientation) are internally consistent and correct; zero unresolved correctness flags from the math/numerics review. |
+| 5 | **Correctness** | 15 | Every numeral matches a re-run of the cited script in `numbers.md`; conventions (index/sign/orientation) are internally consistent and correct; zero unresolved correctness flags from the math/numerics review. **Citation integrity:** every `\cite` resolves to a verified `citations.md` entry (see Gate 2's citation clause); a fabricated reference, an unresolvable identifier, or a positioning claim its cited source cannot support costs points here (and the referee files it as a blocker). |
 | 6 | **Visualization** | 10 | Every figure is present, renders, is **visually inspected** by an agent (not just compiled), is publication-grade, and is **PDF only** (never PNG). Each figure has a self-contained caption; numerical figures cite their `numbers.md` entry / script. **Numbers-as-figures:** every *load-bearing* `numbers.md` quantity also appears in at least one figure or professionally typeset table in the chapters — a bare inline numeral is never the *only* presentation of a key result. Full marks require this; violations cost points here (and the referee files them as blockers), but this is a scoring criterion, not a 7th gate. |
-| 7 | **Pedagogical flow / physics-first** | 5 | Each chapter opens with the physical picture / a named application *before* the algebra; the general theorem precedes its example; the whole reads as **one coherent arc**, not stitched fragments. **Section I story:** the opening article reads as a physics-first, PRL-style standalone story — its first paragraph answers why-it-matters, intuition and the physics behind each result run throughout, with no proofs, no novelty-selling tone, and no compression pain ("it can be shown") — and it carries the theorem-dependency DAG (nodes tagged with the section numbers where proofs live) plus reader-type reading routes. **Preface prose:** the Preface is physical-picture-first, insight-dense prose — every claim carries its *why* (the causal story, the competing effects, the reason the result is forced; the physical picture is the *mental* picture of the mechanism, not a drawing), no dry summarizing, no hedging, no citations, no novelty-selling — and it carries the three-layer reading contract (retell+explain-why / judge / rebuild). |
+| 7 | **Pedagogical flow / physics-first** | 5 | Each chapter opens with the physical picture / a named application *before* the algebra; the general theorem precedes its example; the whole reads as **one coherent arc**, not stitched fragments. **Section I story:** the opening article reads as a physics-first, PRL-style standalone story — its first paragraph answers why-it-matters, intuition and the physics behind each result run throughout, with no proofs, no novelty-selling tone, and no compression pain ("it can be shown") — and it carries the theorem-dependency DAG (nodes tagged with the section numbers where proofs live) plus reader-type reading routes. **Preface prose:** the Preface is physical-picture-first, insight-dense prose — every claim carries its *why* (the causal story, the competing effects, the reason the result is forced; the physical picture is the *mental* picture of the mechanism, not a drawing), no dry summarizing, no hedging, no citations, no novelty-selling — and it carries the three-layer reading contract (retell+explain-why / judge / rebuild). **Context & positioning (literature layer on):** the epilogue carries a "Context and positioning" section — the *only* home for literature positioning (the Preface and Section I stay citation-free) — with (i) the *result* positioned against the research literature (builds-on / sits-beside / adds, every claim about a paper cited from `citations.md`), (ii) *these notes* positioned against existing expositions of the same material, and (iii) the keyed literature-map figure; relationships stated plainly, no novelty-selling, no citation politics. |
 | 8 | **Build & reproducibility** | 5 | Compiles clean (`pdflatex ×3`, no unresolved refs/citations, no overfull-box errors that break layout); every number is traceable to a script; a stranger can rebuild the PDF and re-derive the numbers from the repo. |
 
 **Weighting rationale (keep this ordering generic):** the worked example (4) dominates
@@ -73,9 +75,16 @@ These are binary. Any red gate ⇒ the notes are **not accepted**, even at a hig
 
 - **G1 — Clean build.** `pdflatex ×3` produces the PDF with no unresolved cross-references
   or citations and no layout-breaking errors. (Mpemba case: 131 pp, clean.)
-- **G2 — Single ground-truth for numbers.** *Every* number in the notes traces to one
-  `numbers.md` entry, and that entry is reproduced by re-running its cited script. Zero
-  mismatches. No number appears that is not in `numbers.md`.
+- **G2 — Single ground truth for numbers AND citations.** *Every* number in the notes
+  traces to one `numbers.md` entry, and that entry is reproduced by re-running its cited
+  script. Zero mismatches. No number appears that is not in `numbers.md`. **Citation
+  clause:** every `\cite` in the notes resolves to a `citations.md` entry whose identifier
+  (DOI/arXiv/stable URL) was verified by an actual lookup — zero fabricated or
+  memory-invented references, zero keys missing from `refs.bib`. Wanted-but-unverifiable
+  sources live in `citations.md`'s `[Gaps]` section and the text stays uncited at those
+  points. (If the literature layer is off and the notes contain no `\cite`, the citation
+  clause is vacuously green — the gate never conditions on a knob, only on what the
+  document actually does.)
 - **G3 — No load-bearing concept merely cited.** Every concept a proof or the main
   narrative *depends on* is defined and explained in the notes (Dimension 2 at the gate
   level: depth can be imperfect, but *absence* fails the gate).
@@ -106,7 +115,10 @@ Use the rubric as an **automated referee gate**, not a one-shot human read. The 
 
 1. **Re-derive ground truth.** Re-run every script cited in `numbers.md`; regenerate the
    numbers sheet fresh. If the sheet and code disagree, that is a G2 failure — fix the
-   code or the sheet first.
+   code or the sheet first. When the notes cite: re-resolve every `citations.md`
+   identifier with a fresh lookup (DOI resolves, arXiv ID exists, metadata matches) and
+   cross-check `\cite` keys ↔ ledger ↔ `refs.bib`; any fabricated or unresolvable entry is
+   likewise a G2 failure.
 2. **Build.** `pdflatex ×3` on the assembled document. Capture the `.log`. Any unresolved
    ref / missing figure / fatal error ⇒ G1 red.
 3. **Score + collect blockers.** A referee agent reads the built PDF and scores all 8
@@ -115,7 +127,8 @@ Use the rubric as an **automated referee gate**, not a one-shot human read. The 
    (each blocker = the smallest concrete defect: "Thm 5.2 proof skips the
    surjectivity step"; "ω₃ printed as −0.63 but `verify_core.py` gives −0.6301";
    "Fig 4 caption missing script citation"; "concept *winding number* used in §5 but never
-   defined"). Section-I violations (broken logical chain, missing formal statement, proof
+   defined"; "`\cite{lu2017nonequilibrium}` has no `citations.md` entry / its DOI does not
+   resolve"). Section-I violations (broken logical chain, missing formal statement, proof
    leakage, missing DAG or reading routes) and Preface violations (formula or
    relational-math leaks, orphan claims not in Section I, failed insight test — a claim
    stated without its why transmitted, or a mechanism misunderstanding the prose permits —
@@ -127,8 +140,9 @@ Use the rubric as an **automated referee gate**, not a one-shot human read. The 
    real exit condition; the score guards quality above the gates.
 
 **Lenses for step 3** (run them independently, then merge blockers): (i) a **math** lens —
-every derivation step and convention; (ii) a **numerics** lens — re-run code, confirm every
-printed numeral; (iii) a **pedagogy** lens — any concept used-before-defined or
+every derivation step and convention; (ii) a **numerics / traceability** lens — re-run
+code, confirm every printed numeral, and confirm every `\cite` key resolves to a verified
+`citations.md` entry; (iii) a **pedagogy** lens — any concept used-before-defined or
 cited-not-explained, and whether each chapter is physics-first. This three-lens split is
 what caught the convention/index subtleties in the case-study run.
 

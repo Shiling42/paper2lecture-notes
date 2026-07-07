@@ -12,8 +12,9 @@
 #   *.snm *.synctex.gz  (root+chapters/)    the master .tex AND its final .pdf
 #   _single_*.*   (compile_one wrappers)    *.bbl (needed for arXiv packaging)
 #   *.png at project root (page renders)    numbers.md, contract.md, code/
-#   typeset_sandbox/  (full sandbox copy)   figs/ (figure PDFs + their scripts)
-#   __pycache__/ , .DS_Store (recursive)    job_card.md, BUILD_STATE.md, _agents/
+#   typeset_sandbox/  (full sandbox copy)   citations.md, refs.bib (ground truth)
+#   __pycache__/ , .DS_Store (recursive)    figs/ (figure PDFs + their scripts)
+#                                           job_card.md, BUILD_STATE.md, _agents/
 #
 # USAGE
 #   bash clean.sh            # DRY RUN (default): list what would be removed
@@ -85,8 +86,9 @@ while IFS= read -r f; do remove "$f"; done < <(find "$PROJ" -name '.DS_Store' -t
 # --- summary ------------------------------------------------------------------
 if [ "$DELETE" -eq 1 ]; then
   echo "CLEAN: removed $count item(s), ~${bytes} KB freed."
-  echo "Kept: sources, chapters, figs/, code/, numbers.md, contract.md, *.bbl,"
-  echo "      preamble_plain_backup.tex, the final PDF. Rebuild anytime with build_all.sh."
+  echo "Kept: sources, chapters, figs/, code/, numbers.md, citations.md, refs.bib,"
+  echo "      contract.md, *.bbl, preamble_plain_backup.tex, the final PDF."
+  echo "      Rebuild anytime with build_all.sh."
 else
   echo "DRY RUN: $count item(s), ~${bytes} KB would be freed. Re-run with --yes to delete."
 fi

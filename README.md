@@ -2,7 +2,7 @@
 
 An agent skill that expands a terse research paper — or a pile of dense notes — into **self-contained, professionally typeset lecture notes**. Ships in two editions: a [Claude Code](https://claude.com/claude-code) plugin and a framework-neutral port for [Codex CLI](https://developers.openai.com/codex) and other agents.
 
-Every concept is built from scratch, every theorem gets a gap-free proof, one non-degenerate worked example runs through every chapter, every quoted number traces to runnable code, and the result is gated by a 100-point acceptance rubric with six hard gates.
+Every concept is built from scratch, every theorem gets a gap-free proof, one non-degenerate worked example runs through every chapter, every quoted number traces to runnable code, every citation to a lookup-verified ledger, and the result is gated by a 100-point acceptance rubric with six hard gates.
 
 Distilled from a real run: a terse ~11-page PRX paper expanded into a 131-page typeset note with a clean three-pass LaTeX build.
 
@@ -56,10 +56,11 @@ Just ask in natural language — the skill triggers on intent:
 
 Starting a fresh paper? Open [`skills/paper2notes/references/new_paper_checklist.md`](skills/paper2notes/references/new_paper_checklist.md) first — it walks through every field to adapt, including the non-degeneracy constraint for your running example.
 
-The heavy build runs as a multi-agent pipeline (Scaffold → Example → Draft → Verify → Typeset → Figures → Referee) with two knobs:
+The heavy build runs as a multi-agent pipeline (Scaffold → Example ∥ Literature → Draft → Verify → Assemble → Synthesis → Typeset → Figures → Referee) with three knobs:
 
 - `mode: 'light'` — cheap first pass, draft grade;
-- `mode: 'full'` (default) — the rubric-gated build.
+- `mode: 'full'` (default) — the rubric-gated build;
+- `bib: 'auto' | 'inherit' | 'discover' | 'off'` — the literature layer: a lookup-verified `refs.bib` + `citations.md` ledger (`discover` search-fills the gaps for drafts with thin or no bibliography — never from model memory), feeding the epilogue's "Context & positioning" section and its literature-map figure.
 
 ## What's inside
 
@@ -70,7 +71,7 @@ skills/paper2notes/
     ├── acceptance_rubric.md            100-point rubric + six hard gates that define "done"
     ├── typesetting_guide.md            the Palatino/tcolorbox look: layering discipline, load order
     ├── preamble_lecture_notes.tex      compile-tested professional preamble, ready to \input
-    ├── figure_techniques.md            11 reusable figure archetypes + the visual-check loop
+    ├── figure_techniques.md            12 reusable figure archetypes + the visual-check loop
     ├── build_workflow_template.js      the multi-agent build pipeline (Claude Code Workflow tool)
     ├── new_paper_checklist.md          start here for a new paper
     └── scaffold/                       verified project templates (master.tex, build scripts, contract)
@@ -79,6 +80,7 @@ skills/paper2notes/
 Design principles worth knowing before you run it:
 
 - **One source of truth for numbers** — every quantity traces to a `numbers.md` generated and cross-checked three independent ways by runnable code.
+- **One source of truth for citations** — every `\cite` resolves to a `citations.md` entry whose identifier was verified by an actual lookup; fabricated references are a gate failure. Positioning lives only in the epilogue's Context section — the Preface and Section I stay citation-free.
 - **Key numbers get a visual home** — load-bearing quantities must appear in a figure or typeset table, never only as inline numerals.
 - **Typesetting is a non-invasive layer** — the look is applied by upgrading only the preamble, never by renaming environments.
 - **Adversarial verification** — every chapter faces independent math, numerics, and pedagogy reviewers; a strict referee blocks on hard gates.

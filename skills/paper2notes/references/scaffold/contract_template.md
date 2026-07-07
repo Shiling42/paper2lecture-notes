@@ -46,6 +46,23 @@ The preamble (`preamble.tex`) is the design layer of the document, and it is
 - If a chapter needs a quantity that is missing, the fix is to extend the
   verifier script and regenerate `numbers.md` — not to compute it inline.
 
+## 2b. Citations: one source of truth (when the literature layer is on)
+
+- `citations.md` + `refs.bib` are the **single source of truth for every
+  citation**: every entry carries an identifier (DOI/arXiv/stable URL) that was
+  **verified by an actual lookup**, a tier tag, and a one-line role.
+- **`\cite` only keys that exist in the ledger. Never cite from memory** — a
+  reference that is not in the verified ledger does not get cited; if a source
+  you want is missing, leave the statement uncited (the notes are
+  self-contained; citations are provenance, not proof). The ledger's `[Gaps]`
+  section records wanted-but-unverifiable sources.
+- If a chapter needs a source that is missing, the fix is to extend the ledger
+  via the literature verification flow — not to add a bib entry inline.
+- Literature **positioning** lives ONLY in the epilogue's "Context and
+  positioning" section (with the archetype-L literature map, nodes keyed to the
+  ledger). The Preface and Section I stay citation-free; no novelty-selling or
+  citation politics anywhere.
+
 ## 3. Numbers-as-figures policy
 
 **Every load-bearing quantity in `numbers.md` must also appear in at least one

@@ -9,6 +9,10 @@
  * WHAT IT DOES (pipeline overview)
  *   Phase A  Scaffold     preamble + master file + build scripts + notation contract
  *   Phase B  Example      author a numeric verifier, RUN it, write numbers.md (ground truth)
+ *   Phase B2 Literature   (parallel with B; skipped when BIB='off') build + verify the
+ *                         citations ledger — refs.bib + citations.md, the literature
+ *                         analogue of numbers.md: no \cite outside the ledger, nothing in
+ *                         the ledger without a lookup-verified identifier (anti-fabrication)
  *   Phase C  Draft+Verify per chapter, PIPELINED: draft -> 3 adversarial lenses
  *                         (math / numeric / pedagogy) in parallel -> apply fixes -> recompile
  *                         (light mode: ONE combined lens instead of three — see MODE)
@@ -37,9 +41,10 @@
  *
  * HOW TO ADAPT
  *   Edit ONLY the CONFIG block (clearly marked, at the top). In order:
- *     0. KNOBS         — MODE ('full' | 'light' cheap first pass) and SKILLREF
- *                        (optional path to the skill package root; unlocks the
- *                        shipped scaffold templates + professional preamble).
+ *     0. KNOBS         — MODE ('full' | 'light' cheap first pass), BIB (the
+ *                        literature layer: 'auto' | 'inherit' | 'discover' | 'off'),
+ *                        and SKILLREF (optional path to the skill package root;
+ *                        unlocks the shipped scaffold templates + professional preamble).
  *     1. PATHS         — OUT (output dir), PAPER (source), CODE (verifier dir),
  *                        SOURCES (extra dense-notes files), FIGS (reusable PDFs).
  *                        The defaults are PLACEHOLDERS; the script refuses to
@@ -111,6 +116,7 @@ export const meta = {
   phases: [
     { title: 'Scaffold', detail: 'preamble, master file, build scripts, notation contract' },
     { title: 'Example', detail: 'author + run the numeric verifier; write numbers.md (ground truth)' },
+    { title: 'Literature', detail: 'build + verify the citations ledger (refs.bib + citations.md) — the literature analogue of numbers.md' },
     { title: 'Draft', detail: 'one agent per chapter writes full pedagogical text + figures' },
     { title: 'Verify', detail: '3 adversarial lenses per chapter (math/numeric/pedagogy), then fix' },
     { title: 'Assemble', detail: 'appendices, stitch, unify notation, full pdflatex build' },
@@ -139,12 +145,26 @@ const A = (typeof args === 'object' && args) ? args : {}
 //        verification lens per chapter (math+numeric+pedagogy in a single
 //        adversarial prompt) instead of three parallel lenses, a single referee
 //        round, and no figure-review loop. Light NEVER trims: the Phase B
-//        ground-truth numbers (including the independent audit), clean 3-pass
-//        builds, the Synthesis phase (Section I is ALWAYS written from the
-//        finished chapters, and the Preface steps — writer, blind insight-test,
-//        fixer — are part of Synthesis and NEVER trimmed), or the Typeset
-//        phase. Light output is DRAFT GRADE — rubric compliance not claimed.
+//        ground-truth numbers (including the independent audit), the Phase B2
+//        citations ledger + its audit (only the T3 claim-support spot-checks
+//        are full-mode-only), clean 3-pass builds, the Synthesis phase
+//        (Section I is ALWAYS written from the finished chapters, and the
+//        Preface steps — writer, blind insight-test, fixer — are part of
+//        Synthesis and NEVER trimmed), or the Typeset phase. Light output is
+//        DRAFT GRADE — rubric compliance not claimed.
 const MODE = A.mode === 'light' ? 'light' : 'full'
+// BIB  : the LITERATURE LAYER knob — 'auto' (default) | 'inherit' | 'discover' | 'off'.
+//        The layer builds a SECOND ground-truth pair next to numbers.md: refs.bib +
+//        citations.md (every entry identifier-verified by an actual lookup; see Phase B2).
+//        - 'inherit'  : ledger built ONLY from the source paper's own bibliography.
+//        - 'discover' : inherit whatever exists, then fill load-bearing gaps by
+//                       search-grounded discovery (for drafts with thin/no bibliography).
+//        - 'auto'     : inherit if the source carries a usable bibliography, else discover
+//                       (resolved by the Literature agent, recorded in citations.md).
+//        - 'off'      : no literature layer — the pre-2.5 behavior; the notes cite nothing.
+//        The anti-fabrication rule is absolute in every mode: no \cite outside
+//        citations.md, nothing in citations.md without a resolved identifier.
+const BIB = ['off', 'inherit', 'discover', 'auto'].includes(A.bib) ? A.bib : 'auto'
 // SKILLREF : OPTIONAL absolute path to the paper2notes skill package
 //        root (the directory containing SKILL.md and references/). When set:
 //        - Phase A ADAPTS the shipped scaffold templates in
@@ -184,6 +204,8 @@ const TEXBIN = A.texbin || '/Library/TeX/texbin'
 
 // Derived paths used throughout (do not normally need editing).
 const NUMBERS  = OUT + '/numbers.md'      // SINGLE SOURCE OF TRUTH for every number
+const CITATIONS = OUT + '/citations.md'   // SINGLE SOURCE OF TRUTH for every citation (BIB != 'off')
+const BIBFILE  = OUT + '/refs.bib'        // the BibTeX database behind citations.md
 const CONTRACT = OUT + '/contract.md'     // notation & style contract every agent obeys
 const MASTER   = OUT + '/lecture_notes.tex'
 const PREFACE  = OUT + '/preface.tex'     // 1-2 page zero-formula Preface (Synthesis writes it LAST)
@@ -239,7 +261,14 @@ NON-NEGOTIABLE STANDARDS (the user enforces these; a reviewer will check them):
    at least one figure or professionally typeset table in the chapters — a bare
    inline number is NOT acceptable as the only presentation of a key result. The
    referee files blockers for violations (scored under Visualization).
-
+${BIB !== 'off' ? `8. ONE SOURCE OF TRUTH FOR CITATIONS. \\cite ONLY keys that exist in ${CITATIONS}
+   (and ${BIBFILE}) — read the ledger before citing. NEVER invent a citation from memory:
+   a reference that is not in the verified ledger does not get cited, period. If a source
+   you want is missing, leave the statement uncited (the notes are self-contained;
+   citations are provenance, not proof) — the ledger's [Gaps] section is where missing
+   sources are recorded. Literature POSITIONING lives ONLY in the epilogue's "Context and
+   positioning" section — never in the Preface or Section I, and never as novelty-selling
+   or citation politics anywhere.` : ''}
 NOTATION CONTRACT: follow ${CONTRACT} EXACTLY (macros, theorem environments, label
 conventions, what each chapter may assume from earlier chapters). Read it before writing.
 
@@ -262,6 +291,32 @@ const CONCEPTS = A.concepts || [
   'the saddle-node fold normal form', 'the Courant-Fischer min-max principle',
 ]
 const conceptsList = CONCEPTS.join('; ')
+
+// ---- 4b. POSITIONING SPEC (project-agnostic) -------------------------------
+// Injected into the drafting prompt of the ONE chapter flagged positioning:true
+// (normally the epilogue) when BIB != 'off'. This is the literature layer's only
+// content home: the Preface and Section I stay citation-free by design.
+const POSITIONING_SPEC = `
+THIS CHAPTER CARRIES THE "CONTEXT AND POSITIONING" SECTION — the single home of
+literature positioning in the whole document. Before writing it, read ${CITATIONS}
+(especially its [Positioning] and [Expositions] material) and cite ONLY keys that exist
+there. The section does BOTH positionings:
+ (i)  THE RESULT vs the research literature: what it builds on (the load-bearing prior
+      results, each cited), what it sits beside (the nearest/parallel approaches — one or
+      two sentences each on how they differ in mechanism, assumptions, or scope), and what
+      it adds — the delta stated factually. Every claim ABOUT a paper carries its \\cite.
+ (ii) THESE NOTES vs existing treatments: how this document relates to available
+      expositions of the same material (reviews, textbooks, tutorials — cited) and what it
+      adds at the exposition level (full from-scratch proofs, code-verified numbers, the
+      non-degenerate worked example carried throughout).
+ PLUS the LITERATURE-MAP FIGURE (archetype L in the skill's figure_techniques.md): a
+ three-band TikZ map — FOUNDATIONS (upstream, what the result builds on) at the top, THIS
+ WORK beside its PARALLEL approaches in the middle band, DOWNSTREAM / OPEN directions at
+ the bottom — every node labeled with its citation key, edges = builds-on / contrasts.
+ HOUSE GENES APPLY IN FULL: no novelty-selling tone, no citation politics — state
+ relationships plainly; positioning is a map, not marketing. If a positioning claim has no
+ verifiable source in ${CITATIONS}, weaken it to what the ledger supports or drop it —
+ NEVER cite from memory (the [Gaps] section records what could not be verified).`
 
 // ---- 5. EXAMPLE_SPEC (the linchpin) --------------------------------------
 // A self-contained prompt describing the running example and EXACTLY what the
@@ -323,6 +378,10 @@ numbers.md SECTIONS (each entry cites its producing script; 4-6 sig figs; reprod
 //           (Section I, the opening article); the per-chapter drafting pipeline
 //           (Phase C) EXCLUDES it — the scaffold still stubs it and the master
 //           still \inputs it.
+//   positioning  true for the ONE chapter (normally the epilogue) that carries the
+//           "Context and positioning" section + the literature-map figure when the
+//           literature layer is on (BIB != 'off'); its drafting prompt gets
+//           POSITIONING_SPEC appended. Ignored when BIB = 'off'.
 //   source  where the chapter's content comes from (paper line ranges + machinery)
 //   covers  a detailed brief of what to derive/prove/illustrate (the meat)
 //   figures what figures to author / reuse
@@ -438,16 +497,20 @@ that licenses it, and connect to experiment.`,
     figures: 'TikZ: single-articulation dark block vs multi-edge attachment, charge structure migrating to the slow block.',
   },
   {
-    id: 'ch7', num: 7, core: false,
-    title: 'Epilogue and outlook',
-    source: `Paper ${PAPER} Sec VII.`,
-    covers: `Recap the topology hierarchy in one view. Open directions and pointers to the
-literature. Short and inspiring.`,
-    figures: 'None required.',
+    id: 'ch7', num: 7, core: false, positioning: true,
+    title: 'Epilogue: context, positioning, and outlook',
+    source: `Paper ${PAPER} Sec VII; the [Positioning] section of the citations ledger.`,
+    covers: `Recap the topology hierarchy in one view. Then the "Context and positioning"
+section (see POSITIONING_SPEC, appended automatically): the result against the Mpemba /
+spectral-relaxation literature it builds on, beside the parallel mechanism proposals, and
+what it adds; these notes against existing expositions; the literature-map figure. Close
+with open directions. Short and inspiring.`,
+    figures: 'TikZ: the literature-map / positioning diagram (archetype L), nodes keyed to refs.bib.',
   },
 ]
 const chTitles = CHAPTERS.map(c => `${c.num}=${c.title}`).join('; ')
 const coreIds  = CHAPTERS.filter(c => c.core).map(c => c.id)
+const POSCH    = CHAPTERS.find(c => c.positioning)   // the Context & positioning chapter (if any)
 
 // ---- 7. RUBRIC (acceptance gate) -----------------------------------------
 // The referee scores against this; the HARD GATES below must ALL pass regardless
@@ -469,19 +532,25 @@ ACCEPTANCE RUBRIC (100 pts). Hard gates must ALL pass regardless of score.
   with WHERE each assumption is used.
 4 Worked example & operationality (20, highest): the running example carried through EVERY
   intermediate number in the core chapters; a reader can replicate on a NEW network.
-5 Correctness (15): all numbers match numbers.md; conventions right; zero unresolved flags.
+5 Correctness (15): all numbers match numbers.md; conventions right; zero unresolved flags;
+  every \\cite resolves to a verified citations.md entry — a fabricated or unresolvable
+  reference is a blocker.
 6 Visualization (10): all figures present, render, visually checked, publication-grade;
   every load-bearing numbers.md quantity ALSO appears in at least one figure or
   professionally typeset table (a bare inline number is never its only presentation).
 7 Pedagogical flow / physics-first (5): picture+application first; general before example;
   one coherent arc; Section I reads as a PRL-style story (physics first, no proofs, no selling),
   with dependency DAG and reading routes; the Preface is physical-picture-first, zero-formula
-  prose, a strict compression of Section I, at most 2 typeset pages.
+  prose, a strict compression of Section I, at most 2 typeset pages; when the notes cite, the
+  epilogue carries the "Context and positioning" section (result vs literature + notes vs
+  existing expositions + the keyed literature-map figure; no selling, no citation politics) —
+  the ONLY home of positioning (Preface and Section I stay citation-free).
 8 Build & reproducibility (5): pdflatex x3 clean; numbers traceable to scripts.
-HARD GATES: compiles clean; zero numeric mismatches vs numbers.md; zero unexplained
-load-bearing concepts; every theorem has a full proof; running example present in every core
-chapter; the primary example's defining structural property holds (here: a MULTI-EDGE cut, not
-a single bridge).
+HARD GATES: compiles clean; zero ground-truth mismatches (every number matches numbers.md AND,
+wherever the notes cite, every \\cite resolves to a verified citations.md entry — fabricated
+references are a gate failure); zero unexplained load-bearing concepts; every theorem has a
+full proof; running example present in every core chapter; the primary example's defining
+structural property holds (here: a MULTI-EDGE cut, not a single bridge).
 `) + `
 ACCEPTANCE: total score >= ${THRESHOLD}/100 AND all hard gates green AND zero blockers.`
 
@@ -575,6 +644,8 @@ const SCORE_SCHEMA = {
       type: 'object',
       properties: {
         compiles: { type: 'boolean' },
+        // numbersMatch is the WIDENED G2 (v2.5): numbers vs numbers.md AND, wherever the
+        // notes cite, every \cite resolving to a verified citations.md entry.
         numbersMatch: { type: 'boolean' },
         conceptsExplained: { type: 'boolean' },
         proofsComplete: { type: 'boolean' },
@@ -662,9 +733,13 @@ Run build_all.sh at the end and confirm the stub document compiles cleanly. Retu
 created, compile status, page count.`,
   { label: 'scaffold', phase: 'Scaffold', effort: 'high' })
 
-// =================================================================== PHASE B: example + ground-truth numbers
+// =================================================================== PHASE B: ground truths (example numbers ∥ literature)
 phase('Example')
-log('Phase B: author + run the numeric verifier; write numbers.md (the single source of truth).')
+log('Phase B: numeric ground truth (numbers.md)'
+  + (BIB !== 'off' ? ' with the Literature phase (citations ledger) in parallel.' : '.'))
+
+// ---- Phase B thunk: example + ground-truth numbers (B1 -> B2 -> B3) -------
+const runExample = async () => {
 
 // B1: design the example and produce numbers.md from RUNNABLE code.
 const exDesign = await agent(`You are designing the PRIMARY running example for the lecture notes
@@ -713,6 +788,109 @@ Re-run, verify, rewrite numbers.md. Return what changed and the corrected headli
     { label: 'example-repair', phase: 'Example', effort: 'high' })
 }
 
+return exDesign
+}
+
+// ---- Phase B2 thunk: literature ground truth (L1 -> L2 -> L3) --------------
+// The literature analogue of Phase B: citations.md + refs.bib are built and
+// independently audited BEFORE any drafting, so chapters only ever cite verified
+// keys. Skipped entirely when BIB = 'off'.
+const runLiterature = async () => {
+  if (BIB === 'off') return null
+
+  // L1: build the ledger (inherit and/or discover), verify every entry by lookup.
+  const litBuild = await agent(`You are building the CITATIONS GROUND TRUTH for the lecture
+notes: ${BIBFILE} (BibTeX) and ${CITATIONS} (the annotated ledger). This is the literature
+analogue of numbers.md: NO \\cite may appear in the notes that does not resolve to a verified
+entry here, and NO entry may enter without a resolved identifier. A citation produced from
+model memory without verification is exactly the failure mode this file exists to prevent
+(fabricated references).
+
+MODE: ${BIB}.
+ - inherit  : build the ledger ONLY from the source's own bibliography.
+ - discover : inherit whatever exists, THEN fill the load-bearing gaps by search.
+ - auto     : inspect the source; if it carries a usable bibliography (\\bibliography line,
+   a .bib/.bbl next to it, or embedded \\bibitem entries), behave as inherit; else as
+   discover. Record the RESOLVED mode in the ledger header.
+
+STEP 1 — INHERIT. Read ${PAPER} (and the machinery sources: ${sourcesList}); collect its
+\\cite keys and its bibliography (.bib/.bbl next to the source, or embedded \\bibitem
+entries). Carry over the entries the notes will actually lean on (the load-bearing subset,
+not necessarily all).
+STEP 2 — DISCOVER (discover mode, or auto resolved to discover). Derive search targets from
+(a) the load-bearing CONCEPTS (${conceptsList}) — the original/canonical source and one good
+modern treatment each, where they exist; (b) the paper's central claims — the nearest prior
+and parallel works needed to POSITION the result; (c) existing expositions (reviews,
+textbooks, tutorials) of the same material, for the notes-vs-expositions paragraph. Search
+with the network tools available to you; the keyless APIs work everywhere:
+arXiv Atom API (http://export.arxiv.org/api/query), Crossref (https://api.crossref.org/works),
+OpenAlex (https://api.openalex.org/works). If installed literature/citation skills are
+available in your environment, you may use those instead.
+STEP 3 — VERIFY EVERY ENTRY (all modes, inherited entries included). Resolve each entry's
+identifier by an ACTUAL lookup: the DOI resolves (e.g. curl -sIL a doi.org URL), or the
+arXiv ID exists (API query), or a stable URL responds — that is tier T1; then confirm
+title/authors/year match the BibTeX — tier T2. Tag every entry with the tier reached.${MODE === 'full' ? `
+For the POSITIONING-CRITICAL entries (the ones the Context section will lean on), also do a
+T3 claim-support check: read the abstract (and the relevant section where accessible) and
+confirm the work actually supports the one-line role you assign it.` : ''}
+STEP 4 — WRITE ${CITATIONS} with sections:
+ [Header]      the resolved mode and the search targets used.
+ [Entries]     one line per key: BibTeX key | identifier (DOI/arXiv/URL) | tier reached |
+               one-line role (what this work establishes FOR THESE NOTES) | where the notes
+               should use it.
+ [Positioning] the epilogue Context-section inputs, every item keyed: UPSTREAM (works the
+               result builds on, and which prior result each supplies); PARALLEL (nearest /
+               competing approaches, one line each on how they differ in mechanism,
+               assumptions, or scope); DOWNSTREAM/OPEN (what the result enables or leaves
+               open); EXPOSITIONS (existing treatments of the same material, for the
+               notes-vs-expositions paragraph).
+ [Gaps]        wanted-but-unverifiable sources: claims or concepts for which no verifiable
+               reference was found. Record them explicitly — the notes stay UNCITED at those
+               points; gaps are visible, never papered over.
+STEP 5 — WRITE ${BIBFILE}: exactly one clean BibTeX entry per ledger key (stable descriptive
+keys, no duplicates). Do NOT wire the master's \\bibliography hook — the Assemble phase does
+that once chapters actually cite.
+NETWORK FALLBACK: if you genuinely have no network access, fall back to inherit-only from
+the local files and record every discovery target under [Gaps] — NEVER fill a gap from
+memory.
+Return: the resolved mode, entry counts by tier, a 2-3 line positioning headline, and the
+gap count.`,
+    { label: 'literature-build', phase: 'Literature', effort: 'high' })
+
+  // L2: an INDEPENDENT auditor re-resolves every identifier with fresh lookups.
+  const litCheck = await agent(`Independently AUDIT the citations ground truth. Read
+${CITATIONS} and ${BIBFILE}. With your OWN fresh lookups (doi.org, the arXiv API, Crossref,
+OpenAlex), re-resolve EVERY entry's identifier and re-check its metadata (title / authors /
+year) against the BibTeX. Cross-check ledger <-> bib: identical key sets, no orphans either
+way, no duplicate keys.${MODE === 'full' ? ` Spot-check the [Positioning] section at T3: for each
+positioning-critical entry, read the abstract and judge whether the work actually supports
+its assigned role.` : ''} Severity calibration: a fabricated or unresolvable reference, a
+metadata mismatch, a ledger<->bib key mismatch, or a positioning role its source cannot
+support is severity=blocker. If everything verifies, say so explicitly.`,
+    { label: 'literature-audit', phase: 'Literature', schema: FINDINGS_SCHEMA })
+
+  log('Literature audit: ' + (litCheck ? litCheck.summary : 'n/a'))
+
+  // L3: repair the ledger BEFORE drafting if the audit found blockers/majors.
+  const litBlockers = ((litCheck && litCheck.findings) || [])
+    .filter(f => f.severity === 'blocker' || f.severity === 'major')
+  if (litBlockers.length) {
+    log('Repairing ' + litBlockers.length + ' blocker/major citation-ledger issue(s) before drafting.')
+    await agent(`The citations ground truth has serious issues found by an audit. Fix
+${CITATIONS} and ${BIBFILE} so every entry's identifier resolves, metadata matches, ledger
+and bib key sets agree, and every positioning role is supported (move anything unverifiable
+to [Gaps] — never keep an unverified entry). Findings:
+${litBlockers.map(f => '- [' + f.location + '] ' + f.problem + ' => ' + f.fix).join('\n')}
+Re-verify by fresh lookups after fixing. Return what changed and the corrected entry counts.`,
+      { label: 'literature-repair', phase: 'Literature' })
+  }
+  return litBuild
+}
+
+// Both ground truths are prerequisites of drafting; they are independent of each
+// other, so they run concurrently (each agent carries its own phase label).
+const [exDesign] = await parallel([runExample, runLiterature])
+
 // =================================================================== PHASE C: draft -> verify(3 lenses) -> fix, PIPELINED per chapter
 phase('Draft')
 // The chapter marked synthesis:true (Section I) is EXCLUDED here: it summarizes the
@@ -744,7 +922,7 @@ ${ch.covers}
 ${ch.core ? `
 THIS IS A CORE CHAPTER: the primary running example, with its ACTUAL values quoted from
 ${NUMBERS}, MUST appear here — the referee enforces this as a hard gate (exampleInCoreChapters).
-` : ''}
+` : ''}${ch.positioning && BIB !== 'off' ? POSITIONING_SPEC + '\n' : ''}
 CONCEPTS that must be BUILT FROM SCRATCH if used here (never merely cited): ${conceptsList}.
 
 FIGURES: ${ch.figures}
@@ -775,7 +953,9 @@ on load-bearing steps; the project's key conventions exactly right (see the corr
 the standards). A plausible-looking step that is not actually justified IS a finding.
 (b) NUMERIC: extract every numeric value, vector, and example claim and check it VERBATIM against
 ${NUMBERS}; re-run the relevant script in ${CODE} or the verifier under ${OUT} where useful; flag
-any mismatch, untraceable quantity, wrong sign, or inconsistent intermediate — expected vs found.
+any mismatch, untraceable quantity, wrong sign, or inconsistent intermediate — expected vs found.${BIB !== 'off' ? `
+Also check every \\cite key against ${CITATIONS} and ${BIBFILE}: an unknown, memory-invented, or
+ledger-missing citation key is a blocker finding.` : ''}
 (c) PEDAGOGY: read as ${AUDIENCE}; flag any concept USED BEFORE DEFINED, any object merely CITED
 rather than explained (each of these must be built up: ${conceptsList}), missing intuition before
 algebra, missing physical motivation, the general theorem not stated before the example, any
@@ -801,7 +981,9 @@ ${STANDARDS}`,
 ${chFile(ch.id)}. Extract every numeric value, vector, and example claim and check it VERBATIM
 against ${NUMBERS}. Where useful, re-run the relevant script in ${CODE} or the verifier under
 ${OUT} to confirm. Flag any number that does not match numbers.md, any quantity with no traceable
-source, any wrong sign, any inconsistent intermediate value. Be exact: expected vs found.`,
+source, any wrong sign, any inconsistent intermediate value. Be exact: expected vs found.${BIB !== 'off' ? `
+Also check every \\cite key in the chapter against ${CITATIONS} and ${BIBFILE}: an unknown,
+memory-invented, or ledger-missing citation key is a blocker finding.` : ''}`,
       { label: 'verify:' + ch.id + ':num', phase: 'Verify', schema: FINDINGS_SCHEMA }),
 
     // pedagogy / self-containedness lens (cheaper)
@@ -860,10 +1042,16 @@ and drive the WHOLE document ${MASTER} to a CLEAN three-pass pdflatex build. Fix
 undefined references, duplicate labels, inconsistent notation/macro use across chapters (reconcile
 against ${CONTRACT}), broken \\includegraphics paths (copy needed PDFs from ${FIGS} into
 ${OUT}/figs/ and normalize to figs/<name>.pdf), TOC/numbering, and any LaTeX errors or overfull-box
-disasters. Ensure ONE coherent arc: consistent symbols, working forward/back references, no
-redefinitions. Do NOT rewrite chapter content beyond what coherence/compilation requires (and never
-"simplify" preamble.tex to dodge an error — fix the offending chapter). Return: final compile
-status, page count, residual warnings worth noting.`,
+disasters. ${BIB !== 'off' ? `WIRE THE BIBLIOGRAPHY: the chapters cite keys from ${BIBFILE} (the
+verified ledger is ${CITATIONS}). Ensure refs.bib sits next to the master, uncomment/add the
+\\bibliographystyle{unsrt} + \\bibliography{refs} lines at the master's bibliography hook, and
+drive the pdflatex/bibtex/pdflatex x2 cycle (build_all.sh auto-detects the uncommented line) to
+ZERO undefined citations. Any \\cite key missing from the ledger is a defect in the CHAPTER (fix
+the cite or drop it) — never invent a bib entry to silence it. ` : ''}Ensure ONE coherent arc:
+consistent symbols, working forward/back references, no redefinitions. Do NOT rewrite chapter
+content beyond what coherence/compilation requires (and never "simplify" preamble.tex to dodge an
+error — fix the offending chapter). Return: final compile status, page count, residual warnings
+worth noting.`,
   { label: 'assemble', phase: 'Assemble', schema: FIX_SCHEMA, effort: 'high' })
 
 log('Assembly compiles: ' + (assembleResult ? assembleResult.compiles : 'unknown'))
@@ -1182,10 +1370,21 @@ Be a strict, adversarial referee (peer-review-level scrutiny). For each dimensio
 of its max with specific notes. Set each hard gate true ONLY if genuinely satisfied. List the
 concrete BLOCKERS that must be fixed (file + what + how). Verify in particular: every theorem has a
 complete proof; no load-bearing concept is merely cited; all numbers match numbers.md; the primary
-example's structural invariant holds; it compiles. Also verify NUMBERS-AS-FIGURES: every
+example's structural invariant holds; it compiles. The numbersMatch gate is the WIDENED G2 —
+ground truth for numbers AND citations: set it true only if every number matches ${NUMBERS} AND,
+wherever the notes cite, every \\cite resolves to an entry in ${BIB !== 'off' ? CITATIONS : 'the citations ledger (none for this run — the notes must then contain no \\cite)'} (spot-re-resolve 2-3
+identifiers yourself by an actual lookup; a fabricated or unresolvable reference fails the gate).
+Also verify NUMBERS-AS-FIGURES: every
 load-bearing quantity in ${NUMBERS} must appear in at least one figure or professionally typeset
 table, not only inline — file a BLOCKER for each violation and deduct under the Visualization
-dimension (this is scoring pressure, NOT a seventh hard gate).${SYNTH ? ` Also evaluate SECTION I
+dimension (this is scoring pressure, NOT a seventh hard gate).${BIB !== 'off' && POSCH ? ` Also
+evaluate the CONTEXT & POSITIONING section (in ${chFile(POSCH.id)}, the document's ONLY
+positioning home — the Preface and Section I must stay citation-free): it must position (i) the
+RESULT against the research literature (builds-on / sits-beside / adds, every claim about a paper
+cited from the ledger) and (ii) THESE NOTES against existing expositions; the keyed literature-map
+figure must be present with its node keys resolving to ${BIBFILE}; no novelty-selling, no citation
+politics. Deduct violations under dimensions 5 (citation integrity) and 7 (context) and file
+BLOCKERS for them — scoring pressure, NOT a seventh hard gate.` : ''}${SYNTH ? ` Also evaluate SECTION I
 (the opening article, ${chFile(SYNTH.id)}) against the D-test and its design criteria: a reader
 of Section I ALONE can judge the paper's central claim ("I believe / don't believe, because ...")
 via a complete chain of FORMALLY STATED results (assumptions + conclusion, NO proofs); working
@@ -1247,9 +1446,9 @@ change content except to fix a build-breaking error. THEN tidy the project: run
   bash "${OUT}/clean.sh" --yes
 (whitelist housekeeping: removes LaTeX aux files, _single_* wrappers, root-level render PNGs,
 typeset_sandbox/, pycache/.DS_Store; keeps sources, chapters, figs/, code/, numbers.md,
-contract.md, *.bbl, preamble_plain_backup.tex, and the final PDF). If clean.sh is missing
-(scaffold predates it), skip tidying — never improvise deletions. Report what was removed.
-Return the final status and page count.`,
+citations.md, refs.bib, contract.md, *.bbl, preamble_plain_backup.tex, and the final PDF). If
+clean.sh is missing (scaffold predates it), skip tidying — never improvise deletions. Report what
+was removed. Return the final status and page count.`,
   { label: 'final-build', phase: 'Referee', schema: FIX_SCHEMA })
 
 return {
@@ -1257,6 +1456,8 @@ return {
   grade: MODE === 'light' ? 'draft grade — rubric compliance not claimed' : 'full',
   accepted,
   threshold: THRESHOLD,
+  bib: BIB,                                    // literature-layer mode ('off' = no citations)
+  citationsLedger: BIB !== 'off' ? CITATIONS : null,
   typeset: typesetOk
     ? 'professional (' + (typesetResult.source || 'unknown') + ' preamble)'
     : 'FAILED — plain preamble in use (see preamble_plain_backup.tex)',

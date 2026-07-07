@@ -47,13 +47,16 @@
 % \input{chapters/appB}  % B  Verifier-script listing / numerics provenance
 
 % ----- bibliography ---------------------------------------------------------
-% Uncomment BOTH lines (and create refs.bib) as soon as any chapter \cite's
-% anything. WHY this hook exists: the acceptance rubric's build gate demands a
-% clean build with ZERO undefined references/citations, and in the real run the
-% referee caught a missing bibliography as a blocker — wire it up early, not at
-% the end. build_all.sh auto-detects an UNCOMMENTED \bibliography{...} line
-% here and switches from pdflatex x3 to the pdflatex / bibtex / pdflatex x2
-% sequence, so no build-script edit is needed.
+% Uncomment BOTH lines as soon as any chapter \cite's anything (the Assemble
+% phase does this in a workflow run). refs.bib is the VERIFIED database built by
+% the Literature phase together with its ledger citations.md — cite only keys
+% that exist there; never hand-add an entry without a lookup-verified identifier.
+% WHY this hook exists: the acceptance rubric's build gate demands a clean build
+% with ZERO undefined references/citations, and in the real run the referee
+% caught a missing bibliography as a blocker — wire it up early, not at the end.
+% build_all.sh auto-detects an UNCOMMENTED \bibliography{...} line here and
+% switches from pdflatex x3 to the pdflatex / bibtex / pdflatex x2 sequence, so
+% no build-script edit is needed.
 %
 % \bibliographystyle{unsrt}
 % \bibliography{refs}

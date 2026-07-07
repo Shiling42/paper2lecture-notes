@@ -29,7 +29,11 @@ pipelining, progress UI).
 ## What the LEAD does
 
 Intake (fills the Job Card with you, fail-fast on blanks) → Scaffold → Example +
-independent numeric audit → per-chapter draft ∥ 3 adversarial lenses ∥ fix → Assemble → Synthesis (Section I, the PRL-style opening article, plus the 1-2 page zero-formula Preface — both written from the finished book) →
+independent numeric audit ∥ Literature + independent citation audit (the lookup-verified
+`refs.bib` + `citations.md` ledger; `auto|inherit|discover|off`) → per-chapter draft ∥ 3
+adversarial lenses ∥ fix → Assemble (wires the bibliography) → Synthesis (Section I, the
+PRL-style opening article, plus the 1-2 page zero-formula Preface — both written from the
+finished book; positioning lives only in the epilogue's Context section) →
 professional Typeset layer (sandbox-first, visual check) → figure visual pass → bounded
 referee loop against the 100-pt rubric / 6 hard gates → final reproduction pass.
 File-based results (`OUT/_agents/*.result.md`), dispatch-log crash recovery
@@ -37,8 +41,8 @@ File-based results (`OUT/_agents/*.result.md`), dispatch-log crash recovery
 
 ## Sync note
 
-Generated from skill v2.3.0 and adversarially reviewed against it (16 findings fixed).
-When the Claude Code skill updates:
+In sync with skill v2.5.0 (originally generated from v2.2.0 and adversarially reviewed
+against it, 16 findings fixed). When the Claude Code skill updates:
 
 ```bash
 rm -rf general-agents/paper2notes/references

@@ -31,7 +31,9 @@ quantity in `numbers.md` must *also* appear in at least one figure or profession
 typeset table in the chapters. A bare inline number is never acceptable as the only
 presentation of a key result. This mandate has its own track — **Track 3:
 numbers → figures** (the section before §1.8) — and four dedicated archetypes H–K
-(§1.8–1.11) that make honoring it cheap.
+(§1.8–1.11) that make honoring it cheap. Archetype L (§1.12) is the *positioning*
+analogue: the epilogue's literature map, every node keyed to the verified citations
+ledger (`citations.md` / `refs.bib`).
 
 ---
 
@@ -135,7 +137,7 @@ see the "find pdflatex" block in `typesetting_guide.md`.)
 
 ---
 
-# §1 — NEW pedagogical TikZ & tables (eleven reusable archetypes)
+# §1 — NEW pedagogical TikZ & tables (twelve reusable archetypes)
 
 Each archetype is a complete, self-contained snippet you can paste — a `tikzpicture`
 for A–H and J–K, a `booktabs` table for I — using the palette above. After each, a
@@ -714,6 +716,94 @@ exact coordinates** so the diagram carries a number, not just topology.
 > boundary) with your boundaries, rename the region labels, and move the teal
 > point(s) to your measured location(s) with the printed coordinates read from
 > `numbers.md`.
+
+---
+
+## 1.12 Archetype L — The literature map / positioning diagram
+
+The positioning analogue of Track 3: where H–K give every load-bearing *number* a
+visual home, L gives the **literature positioning** one. It lives in the epilogue's
+"Context and positioning" section (the document's only positioning home) and draws
+three strata — what the result **builds on** (top), **this work beside its parallel
+approaches** (middle), what it **enables or leaves open** (bottom). Every node is
+keyed to the verified citations ledger: each `\cite` must resolve to a
+`citations.md` / `refs.bib` entry (the widened gate G2 — never cite from memory).
+Edge semantics go in a one-line legend, not in floating edge labels (they collide
+with the boxes).
+
+```latex
+\begin{figure}[t]
+  \centering
+  \begin{tikzpicture}[font=\small,
+      work/.style={draw=#1, fill=#1!8, rounded corners=2pt, line width=0.9pt,
+                   align=center, inner sep=5pt},
+      builds/.style={-{Stealth[length=2.6mm]}, navy!70, line width=0.9pt},
+      contrast/.style={{Stealth[length=2.2mm]}-{Stealth[length=2.2mm]},
+                       teal!80, dashed, line width=0.8pt},
+      opens/.style={-{Stealth[length=2.6mm]}, inkgray, dotted, line width=1.0pt},
+      band/.style={inkgray!80, font=\scriptsize\sffamily\bfseries, anchor=west}]
+
+    % ---- the three strata, top to bottom: builds-on / is / enables ----------
+    \node[band] at (-6.6, 3.05) {FOUNDATIONS \,(what it builds on)};
+    \node[band] at (-6.6, 1.30) {THIS WORK \,\&\, PARALLELS};
+    \node[band] at (-6.6,-1.15) {DOWNSTREAM \,\&\, OPEN};
+    \draw[inkgray!35, dashed] (-6.6, 1.55) -- (6.5, 1.55);
+    \draw[inkgray!35, dashed] (-6.6,-0.90) -- (6.5,-0.90);
+
+    % ---- foundations (navy): keyed prior results the proofs lean on ---------
+    \node[work=navy] (f1) at (-4.35, 2.3)
+      {eigenmode Mpemba criterion\\ {\scriptsize\cite{lu-raz-2017}}};
+    \node[work=navy] (f2) at (0.2, 2.3)
+      {matrix-forest theorem\\ {\scriptsize\cite{chebotarev-shamis-2006}}};
+    \node[work=navy] (f3) at (4.45, 2.3)
+      {discrete nodal domains\\ {\scriptsize\cite{davies-nodal-2001}}};
+
+    % ---- middle band: this work (gold, heavier) beside its parallels (teal) --
+    \node[work=gold, line width=1.2pt] (me) at (0.2, 0.0)
+      {\textbf{this work}\\ the Mpemba index as\\ topological frustration};
+    \node[work=teal] (p1) at (-4.55, 0.0)
+      {optimal-quench protocols\\ {\scriptsize\cite{klich-vucelja-2019}}};
+    \node[work=teal] (p2) at (4.65, 0.0)
+      {phase-transition route\\ {\scriptsize\cite{holtzman-raz-2022}}};
+
+    % ---- downstream / open (dashed inkgray): enabled or left open -----------
+    \node[work=inkgray, dashed] (d1) at (-2.2,-2.0)
+      {design rules for\\ engineered relaxation};
+    \node[work=inkgray, dashed] (d2) at (2.8,-2.0)
+      {open: driven \&\\ non-reversible networks};
+
+    % ---- edges; their semantics live in the legend line below ----------------
+    \draw[builds] (f1) -- (me);
+    \draw[builds] (f2) -- (me);
+    \draw[builds] (f3) -- (me);
+    \draw[contrast] (p1) -- (me);
+    \draw[contrast] (me) -- (p2);
+    \draw[opens] (me) -- (d1);
+    \draw[opens] (me) -- (d2);
+
+    % ---- edge legend (keeps the bands clean of floating labels) -------------
+    \node[inkgray, font=\scriptsize, anchor=west] at (-6.6,-3.15)
+      {\textcolor{navy!70}{solid} = builds on;\quad
+       \textcolor{teal!80}{dashed} = same effect, different mechanism;\quad
+       dotted = enables / leaves open};
+  \end{tikzpicture}
+  \caption[Literature map]{\textbf{Where this result sits.} Top: the prior results
+  the proofs build on. Middle: this work beside the nearest parallel approaches —
+  same phenomenon, different mechanism. Bottom: what the result enables or leaves
+  open. Every node is keyed to the verified ledger: keys resolve to
+  \texttt{refs.bib} / \texttt{citations.md}.}
+  \label{fig:archL}
+\end{figure}
+```
+
+> **Change this to adapt:** swap the node texts and `\cite` keys for your paper's
+> upstream / parallel / downstream works — every key MUST exist in the verified
+> `citations.md` / `refs.bib` (the `[Positioning]` section of the ledger is exactly
+> this figure's data). Keep one gold "this work" node, ≤ 3–4 nodes per band, and the
+> legend line; more nodes than that means the *section prose* should carry the tail,
+> not the map. Standalone-check nuance: under `check_figure.sh` the `\cite`s render
+> as `[?]` (no bibliography in the wrapper) — that is expected; judge layout
+> standalone and citation rendering in the full build.
 
 ---
 

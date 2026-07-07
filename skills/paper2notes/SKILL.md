@@ -1,6 +1,6 @@
 ---
 name: paper2notes
-description: Expand a terse research paper or dense notes into self-contained, professionally typeset lecture notes with full from-scratch proofs, a non-degenerate worked example carried throughout, the Palatino / tcolorbox typesetting, and reusable TikZ figure techniques. Use when the user wants to turn a paper into lecture/teaching notes, make a dense result readable or self-contained, or asks for a pedagogical expansion of a paper.
+description: Expand a terse research paper or dense notes into self-contained, professionally typeset lecture notes with full from-scratch proofs, a non-degenerate worked example carried throughout, a lookup-verified bibliography with a literature-positioning section (inherited from the source or search-discovered for bibliography-less drafts — never fabricated), the Palatino / tcolorbox typesetting, and reusable TikZ figure techniques. Use when the user wants to turn a paper into lecture/teaching notes, make a dense result readable or self-contained, ask for a pedagogical expansion of a paper, or expand a draft into notes that also position its result in the current literature.
 ---
 
 # Paper → Lecture Notes
@@ -26,7 +26,9 @@ the `scaffold/` templates, and `new_paper_checklist.md`); this file is the map.
 
 - Polishing an already-written paper for submission → use a paper-review/polish skill.
 - Writing a *new* paper from results → use a paper-writing pipeline.
-- A quick summary or literature review → use a research-lit skill.
+- A quick summary, or a *standalone* literature review → use a research-lit skill. (The
+  literature layer here builds a verified bibliography *for the notes* and positions the
+  result in the epilogue; it is not a survey deliverable.)
 - Slides/poster from a paper → use the slides/poster skills.
 
 ## Procedure (ten phases)
@@ -49,7 +51,8 @@ layer** — are the heavy build, best run by the multi-agent workflow
    (phase 4) here. Starting a **new** paper? Open `references/new_paper_checklist.md`
    first — it walks every adaptation the remaining phases need.
 
-3. **Scaffold + one ground-truth numbers file from runnable code.** Create the project
+3. **Scaffold + the ground-truth files (numbers from runnable code; citations from
+   verified lookup).** Create the project
    (`report` class, `preamble.tex`, master, `compile_one.sh`, `build_all.sh`, `contract.md`)
    — start from the shipped templates in `references/scaffold/` (`master.tex`,
    `compile_one.sh`, `build_all.sh`, `contract_template.md`, `check_figure.sh`, `clean.sh`) and walk
@@ -60,6 +63,20 @@ layer** — are the heavy build, best run by the multi-agent workflow
    will quote and **run it** to produce `numbers.md` — the single source of truth. Each
    entry cites its producing script; cross-check the key quantities ≥3 independent ways so
    a single bug cannot pass. Never let a number into the notes that is not in `numbers.md`.
+   **The literature layer (unless `BIB: 'off'`) builds the second ground-truth pair the
+   same way:** `refs.bib` + `citations.md` — every entry with an identifier (DOI/arXiv)
+   **verified by an actual lookup**, a one-line role, and a tier tag; an `inherit` mode
+   (carry over the source paper's own bibliography) and a `discover` mode (search-fill the
+   load-bearing gaps via the keyless arXiv/Crossref/OpenAlex APIs or installed literature
+   skills — for drafts with thin or no bibliography), with `auto` picking between them.
+   The ledger also carries a `[Positioning]` section (upstream / parallel / downstream /
+   expositions — the epilogue's inputs) and a `[Gaps]` section for
+   wanted-but-unverifiable sources. The anti-fabrication rule is absolute: **no `\cite`
+   outside the ledger, nothing in the ledger without a resolved identifier** — a missing
+   source means the text stays uncited and the gap is recorded, never a citation from
+   model memory. An independent audit re-resolves every identifier before drafting starts
+   (the citation analogue of the numbers audit); the bibliography hook itself is wired at
+   Assemble time, when chapters actually cite.
 
 4. **Design a NON-DEGENERATE worked example.** Pick a running example that exercises the
    *general* case, not the cheap special case that trivializes the result. Ask: "what's the
@@ -71,11 +88,17 @@ layer** — are the heavy build, best run by the multi-agent workflow
 
 5. **Draft chapters, then adversarially verify on three lenses, then fix.** Draft each
    chapter (full prose, intuition before formalism, full proofs in the main text, worked
-   example with the actual `numbers.md` numbers). Then attack each chapter with three
-   independent lenses — **math** (every step justified, conventions exact), **numeric**
-   (re-run scripts, every numeral matches `numbers.md`), **pedagogy** (nothing
-   used-before-defined or cited-not-explained, physics-first). Dispatch each finding to a
-   narrow fix; re-compile.
+   example with the actual `numbers.md` numbers; `\cite` only keys that exist in
+   `citations.md` — citations are provenance, not proof, and a missing source means no
+   citation, not an invented one). The epilogue chapter (flagged `positioning: true`)
+   additionally carries the **"Context and positioning" section** — the document's *only*
+   positioning home: the result against the literature it builds on and sits beside, these
+   notes against existing expositions, and the keyed literature-map figure (archetype L) —
+   stated plainly, no novelty-selling, no citation politics. Then attack each chapter with
+   three independent lenses — **math** (every step justified, conventions exact),
+   **numeric** (re-run scripts, every numeral matches `numbers.md`, every `\cite` key
+   resolves to the ledger), **pedagogy** (nothing used-before-defined or
+   cited-not-explained, physics-first). Dispatch each finding to a narrow fix; re-compile.
 
 6. **Synthesize the opening article (Section I), then compress it into the Preface.**
    Section I is written AFTER all chapters are drafted
@@ -142,11 +165,11 @@ layer** — are the heavy build, best run by the multi-agent workflow
 
 8. **Figures.** Use **`references/figure_techniques.md`**. Two tracks: *if a human could
    draw it on a whiteboard from memory, it's TikZ; if it requires running code, it's a
-   matplotlib PDF.* Eleven reusable archetypes: seven TikZ classics (network-with-cut,
+   matplotlib PDF.* Twelve reusable archetypes: seven TikZ classics (network-with-cut,
    motif gallery, sign strip, function-with-roots, complex-plane contour, integer
-   staircase, two-block schematic) plus four general-purpose ones (numbers-comparison
-   figure, styled results table, pipeline/flowchart, 2-D phase/regime diagram) + a seeded
-   matplotlib→PDF skeleton. PDF only. **Numbers-as-figures mandate:** every load-bearing
+   staircase, two-block schematic) plus five general-purpose ones (numbers-comparison
+   figure, styled results table, pipeline/flowchart, 2-D phase/regime diagram,
+   literature-map/positioning diagram) + a seeded matplotlib→PDF skeleton. PDF only. **Numbers-as-figures mandate:** every load-bearing
    quantity in `numbers.md` must *also* appear in at least one figure or professionally
    typeset table in the chapters — a bare inline numeral is never the only presentation of
    a key result. Run the visual-check loop (`references/scaffold/check_figure.sh`) on
@@ -162,8 +185,10 @@ layer** — are the heavy build, best run by the multi-agent workflow
    above them.
 
 10. **Reproduce every number, finish, and tidy.** Re-run every cited script; confirm
-   `numbers.md` ↔ chapters ↔ scripts all agree. Do a final figure pass, fix any missing
-   bibliography / undefined refs, and run the final clean three-pass build. Then run
+   `numbers.md` ↔ chapters ↔ scripts all agree. When the notes cite, re-resolve the
+   `citations.md` identifiers and confirm `\cite` keys ↔ ledger ↔ `refs.bib` agree (zero
+   fabricated or unresolvable references — the widened gate G2). Do a final figure pass,
+   fix any missing bibliography / undefined refs, and run the final clean three-pass build. Then run
     `clean.sh --yes` (shipped in `references/scaffold/`): whitelist housekeeping that removes
     LaTeX aux files, `_single_*` wrappers, render PNGs, and `typeset_sandbox/`, while keeping
     sources, `numbers.md`, `code/`, `figs/`, `preamble_plain_backup.tex`, and the final PDF.
@@ -184,6 +209,13 @@ layer** — are the heavy build, best run by the multi-agent workflow
 - **One source of truth for numbers.** Every numeral comes from a single `numbers.md`
   generated by runnable code and cross-checked. The prettiest box around a wrong number is
   still wrong.
+- **One source of truth for citations — and one home for positioning.** Every `\cite`
+  resolves to a `citations.md` entry whose identifier was verified by an actual lookup;
+  nothing is ever cited from model memory (a fabricated reference is a gate failure, the
+  citation analogue of an invented number). Literature *positioning* — the result against
+  the field, and these notes against existing expositions — lives only in the epilogue's
+  "Context and positioning" section with its keyed literature-map figure; the Preface and
+  Section I stay citation-free by design.
 - **Key numbers get a visual home.** Every load-bearing quantity in `numbers.md` must also
   appear in at least one figure or professionally typeset table in the chapters; a bare
   inline numeral is never the only presentation of a key result. The referee files
@@ -213,11 +245,12 @@ layer** — are the heavy build, best run by the multi-agent workflow
 
 For the phase 3–10 build, adapt and launch **`references/build_workflow_template.js`** with
 the **Workflow** tool (not plain node). Edit only its CONFIG block (paths, topic/audience,
-standards, concepts, example spec, chapters, rubric, plus the optional `SKILLREF` and
-`MODE` knobs); the pipelined phase code
-(scaffold → example → draft → 3-lens verify → assemble → synthesize → typeset → figures →
-referee loop) is project-agnostic and runs unchanged. The stages cover phases 3–10
-**including phase 7**: Scaffold = 3, Example = 4, Draft + Verify = 5, Synthesis = 6,
+standards, concepts, example spec, chapters, rubric, plus the optional `SKILLREF`,
+`MODE`, and `BIB` knobs); the pipelined phase code
+(scaffold → example ∥ literature → draft → 3-lens verify → assemble → synthesize →
+typeset → figures → referee loop) is project-agnostic and runs unchanged. The stages
+cover phases 3–10 **including phase 7**: Scaffold = 3, Example = 4 (with the parallel
+Literature stage building phase 3's citations ledger), Draft + Verify = 5, Synthesis = 6,
 Typeset = 7, Figures = 8, Referee = 9, with Assemble and the referee loop together
 covering 10's reproduce-and-finish. Set `SKILLREF`
 to this skill's root so Phase A adapts the shipped `references/scaffold/` templates and
@@ -231,9 +264,17 @@ referee loop bound (`MAX_REFEREE_ROUNDS`).
 **Mode knob.** `MODE: 'light'` is a cheap first pass: one *combined*
 math+numeric+pedagogy verification lens per chapter instead of three parallel lenses, a
 single referee round, and no figure-review loop. Light never trims the numbers ground
-truth (including the independent audit), clean three-pass builds, the Synthesis stage, or
-the Typeset phase — and its output is explicitly labeled "draft grade — rubric compliance
-not claimed". The default, `'full'`, is the rubric-grade build.
+truth (including the independent audit), the citations ledger and its audit (only the T3
+claim-support spot-checks are full-mode-only), clean three-pass builds, the Synthesis
+stage, or the Typeset phase — and its output is explicitly labeled "draft grade — rubric
+compliance not claimed". The default, `'full'`, is the rubric-grade build.
+
+**Literature knob.** `BIB: 'auto' | 'inherit' | 'discover' | 'off'` (default `auto`).
+`inherit` builds the citations ledger only from the source's own bibliography; `discover`
+additionally search-fills the load-bearing gaps (drafts with thin or no bibliography);
+`auto` inherits when the source carries a usable bibliography, else discovers; `off`
+disables the layer entirely (the notes then cite nothing — the pre-2.5 behavior). All
+modes verify every entry by lookup and obey the anti-fabrication rule.
 
 ## Worked case study (the Mpemba run)
 
