@@ -29,7 +29,7 @@ pipelining, progress UI).
 ## What the LEAD does
 
 Intake (fills the Job Card with you, fail-fast on blanks) → Scaffold → Example +
-independent numeric audit → per-chapter draft ∥ 3 adversarial lenses ∥ fix → Assemble → Synthesis (Section I: the PRL-style opening article, written from the finished book) →
+independent numeric audit → per-chapter draft ∥ 3 adversarial lenses ∥ fix → Assemble → Synthesis (Section I, the PRL-style opening article, plus the 1-2 page zero-formula Preface — both written from the finished book) →
 professional Typeset layer (sandbox-first, visual check) → figure visual pass → bounded
 referee loop against the 100-pt rubric / 6 hard gates → final reproduction pass.
 File-based results (`OUT/_agents/*.result.md`), dispatch-log crash recovery

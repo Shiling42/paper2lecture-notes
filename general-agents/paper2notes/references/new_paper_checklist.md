@@ -72,7 +72,8 @@ defect, not a convenience:
 - `light` — cheap first pass: one combined verification lens per chapter,
   a single referee round, no figure-review loop; output is labeled "draft
   grade — rubric compliance not claimed" (numbers ground-truth, clean builds,
-  and the Typeset phase are never trimmed).
+  the Synthesis stage — Section I and the Preface — and the Typeset phase are
+  never trimmed).
 - `full` — the real thing: three adversarial lenses per chapter, the figure
   review loop, and the referee loop until all hard gates pass.
 

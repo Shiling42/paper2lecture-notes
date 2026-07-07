@@ -77,7 +77,8 @@ layer** — are the heavy build, best run by the multi-agent workflow
    used-before-defined or cited-not-explained, physics-first). Dispatch each finding to a
    narrow fix; re-compile.
 
-6. **Synthesize the opening article (Section I).** Written AFTER all chapters are drafted
+6. **Synthesize the opening article (Section I), then compress it into the Preface.**
+   Section I is written AFTER all chapters are drafted
    and assembled — a PRL-style standalone article that *replaces* any separate prologue
    chapter and opens the notes. The first paragraph answers why-it-matters; intuition and
    "what is the physics behind this" carry the story throughout. Every major theorem of
@@ -92,10 +93,38 @@ layer** — are the heavy build, best run by the multi-agent workflow
    levers, and numbers stay in the body chapters. Success test: a reader of Section I
    *alone* can say "I believe / don't believe the paper's central claim, because ...".
    Length: 8–12 pages for a ~100–130-page note, one-sitting readable. Forbidden genes:
-   novelty-selling tone, citation politics, and "it can be shown" compression. The
-   workflow's **Synthesis** stage (between Assemble and Typeset) automates this; the
-   chapter is marked `synthesis:true` in CHAPTERS, so the per-chapter drafting pipeline
-   skips it.
+   novelty-selling tone, citation politics, and "it can be shown" compression.
+   Once Section I is verified, the same stage compresses it once more into the **Preface**
+   — the top layer of the compression telescope. Radical zero-formula: no display math, no
+   equations, no relational math (=, inequalities, arrows-as-implication), no figures;
+   inline symbols at most as proper *names* (budget: a few, each defined in words in the
+   same sentence) — the preface IS a picture painted in words. Physical-picture-first
+   prose, not dry summary (物理图像清晰 — a vivid, insightful physical picture — is the
+   primary quality bar; 物理图像 here means the *mental* picture of the physics,
+   mechanism-level intuition, not literal drawings): every claim is carried by its WHY —
+   the causal story, the competing effects, the reason the result is forced. Insight-dense:
+   each paragraph must earn an "aha"; a sentence that states WHAT without transmitting WHY
+   is a defect. Strict compression of Section I: zero claims not present there, every
+   sentence traceable and load-bearing; no hedging, no citations, no novelty-selling.
+   ~600–900 words, hard cap 2 typeset pages (checked mechanically in the built PDF). It
+   carries the *reading contract*: a tiny table of the three layers and the competence each
+   purchase buys (retell + explain-why / judge / rebuild) — a table is prose, not a formula.
+   Placement: unnumbered front matter (`\chapter*{Preface}` or equivalent) between the
+   title page and the table of contents. Success test (the insight test): a reader of the
+   Preface alone can *retell* the result to an outsider and *explain the mechanism* — why
+   it holds, what competes with what, where the tension resolves.
+   Verification is the blind insight-test: the preface verifier receives ONLY the preface
+   text at first — it must, from the words alone, retell the result and write out the
+   mechanism as it understood it (why the result holds, what pushes what, where the tension
+   resolves); only then does it open Section I and diff — insight gaps (claims stated
+   without their why transmitted), mechanism misunderstandings the prose permitted, orphan
+   claims, formula/relational-math leaks, contract violations, and page overrun become
+   blocker/major findings.
+   Rubric-wise the Preface folds into dimensions 1 (Self-containedness) and 7 (Pedagogical
+   flow) — no new hard gate, no weight changes; the gates stay exactly G1–G6. The
+   workflow's **Synthesis** stage (between Assemble and Typeset) automates both steps —
+   Section I first, then the Preface compressed from it; the chapter is marked
+   `synthesis:true` in CHAPTERS, so the per-chapter drafting pipeline skips it.
 
 7. **Apply the professional typesetting.** Use **`references/preamble_lecture_notes.tex`**
    and **`references/typesetting_guide.md`**. The load-bearing move: **layer the look on
@@ -143,9 +172,15 @@ layer** — are the heavy build, best run by the multi-agent workflow
 
 - **General theorem first, example second.** State and prove each result at full
   generality, *then* illustrate. The example illustrates; it never replaces the theorem.
-- **The opening chapter is an article, written last.** Section I is a PRL-style synthesis
-  of the finished notes: a reader of it alone can judge the paper's central claim; it is
-  synthesized from the drafted chapters, never from the plan.
+- **The notes are a compression telescope — three zoom levels of one story, written last.**
+  Compression is intelligence: each layer is a lossy compression of the next, complete at
+  its own resolution. The Preface (1–2 pages) buys *retell + explain-why* — its reader can
+  retell the result to an outsider and explain the mechanism: why it holds, what competes
+  with what, where the tension resolves; Section I
+  (8–12 pages, PRL-style) buys *judge* — its reader alone can judge the paper's central
+  claim; the body buys *rebuild* — every proof and number. The compression chain is
+  strictly one-way: body → Section I → Preface, synthesized from the finished layer below,
+  never from the plan.
 - **One source of truth for numbers.** Every numeral comes from a single `numbers.md`
   generated by runnable code and cross-checked. The prettiest box around a wrong number is
   still wrong.

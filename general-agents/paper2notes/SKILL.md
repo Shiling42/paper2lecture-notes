@@ -120,7 +120,8 @@ KEY CORRECTNESS TRAP: <FILL IN: the one convention/sign/index trap in YOUR paper
  "covers" is the drafting brief — detailed; "source" cites paper sections/line ranges.
  Mark EXACTLY ONE chapter (usually ch0) synthesis=yes: it is EXCLUDED from the Phase C1
  drafting fan-out and written by Phase D2 after assembly; its "covers" field may stay one
- line ("Section I — see Phase D2").>
+ line ("Section I — see Phase D2"). The Preface is NOT a chapter row: it is unnumbered
+ front matter that Phase D2 produces by compressing the finished Section I.>
 
 ## Acceptance
 THRESHOLD: 90     # accepted = score ≥ THRESHOLD AND all 6 hard gates green AND 0 blockers
@@ -195,9 +196,8 @@ reused across workers or rounds.** Fixed formats:
 - If it fails again: for a *reviewer lens or figure-reviewer*, record `LENS FAILED` in the
   state file and continue — but never silently treat a dead reviewer as "no findings";
   re-run it later if at all possible. For a *builder* (scaffold / drafter / fixer /
-  appendices / assembler / synthesis writer / repro), the phase cannot proceed — diagnose
-  from its stdout/log
-  before continuing.
+  appendices / assembler / synthesis writer / preface writer / repro), the phase cannot
+  proceed — diagnose from its stdout/log before continuing.
 - A well-formed FIX result reporting `compiles: FAIL` blocks its barrier exactly like a
   dead builder: re-dispatch the worker with the failing log excerpt appended to its prompt.
 - The **referee is phase-blocking**: a twice-failed referee means the round did not happen —
@@ -223,7 +223,7 @@ only `compile_one.sh` (unique per-chapter jobnames) is concurrency-safe. Update
 
 ```markdown
 # BUILD_STATE — <TITLE>
-A scaffold [ ]   B numbers [ ] audit [ ] repair [–]   D assemble [ ]   D2 synth [ ]
+A scaffold [ ]   B numbers [ ] audit [ ] repair [–]   D assemble [ ]   D2 synth [ ] preface [ ]
 C chapters: ch0 [draft|lenses|fixed]  ch1 [...]  (one line per chapter)
 E typeset [ ]    F figures [ ]    G referee: round 0/3, score –, gates –, blockers –
 ## Dispatch log (append-only)
@@ -345,10 +345,12 @@ costs wall-clock time.
   `preamble.tex` to dodge an error — fix the offending chapter construct. Result:
   `_agents/assemble.result.md` (FIX format, incl. final page count).
 
-### Phase D2 — Synthesis (1 worker + 1 verifier, barriers)
+### Phase D2 — Synthesis (Section I + Preface; two writer→verifier→fixer passes, barriers)
 
-Runs AFTER the assemble barrier and BEFORE Phase E: Section I is written LAST, about the
-FINISHED book — it summarizes facts on disk, never plans. Spawn **synthesis writer**
+Runs AFTER the assemble barrier and BEFORE Phase E: Section I is written about the
+FINISHED book — it summarizes facts on disk, never plans — and the Preface is written
+LAST of all, by compressing the finished Section I (the compression chain is strictly
+one-way: body → Section I → Preface). Spawn **synthesis writer**
 owning exactly the synthesis chapter file `chapters/<id>.tex` (the Job-Card row marked
 `synthesis=yes`, usually ch0) plus its own-prefixed figure files. Before writing a word
 it MUST read every drafted chapter file, `OUT/contract.md`, and the section headers of
@@ -390,11 +392,60 @@ Result: `_agents/verify_synth.result.md` (FINDINGS format; `NO FINDINGS` allowed
 
 If findings exist, spawn a **synthesis fixer** on the same chapter file — result:
 `_agents/synthfix.result.md` (FIX format). At the barrier dispatch exactly ONE
-`build_all.sh` run (fixers never run it themselves, per the §4 scheduling rules), so
-Phase E starts from a clean full build that includes Section I. Rubric note: the Phase G
-referee judges Section I inside the EXISTING dimensions 1 (Self-containedness) and 7
+`build_all.sh` run (fixers never run it themselves, per the §4 scheduling rules), so the
+Preface step starts from a clean full build that includes the finished Section I.
+
+**Preface step (last of all).** Then spawn the **preface writer**, owner of
+`OUT/preface.tex` AND the master's front-matter hook: an unnumbered
+`\chapter*{Preface}`-style chapter, `\input` into `master.tex` between the title page and
+`\tableofcontents` (no other worker touches `master.tex` at this step). Before writing a
+word it reads ONLY the finished Section I chapter file and `OUT/contract.md` — nothing
+else. Its brief IS the preface design spec — embed this in the prompt:
+
+> The notes form a COMPRESSION TELESCOPE — three zoom levels of ONE story, each a lossy
+> compression of the next, each complete at its own resolution. Layer 1, the PREFACE
+> (1–2 pages): a reader can RETELL the result to an outsider AND EXPLAIN THE MECHANISM —
+> why it holds, what competes with what, where the tension resolves (the INSIGHT TEST:
+> retell + explain-why). Layer 2, Section I (8–12 pages): the reader can JUDGE the
+> central claim (the D-test). Layer 3, the body: the reader can REBUILD every proof and
+> number. Rules, all enforceable: RADICAL ZERO-FORMULA — no display math, no equations,
+> no relational math (=, inequalities, arrows-as-implication) anywhere; inline math
+> symbols at most as proper NAMES (budget: a few, each defined in words in the same
+> sentence); no figures either — the preface IS a picture painted in words.
+> PHYSICAL-PICTURE-FIRST PROSE, not dry summary: the MENTAL picture of the physics —
+> mechanism-level intuition, not literal drawings — carries every claim; each claim
+> travels with its WHY (the causal story, the competing effects, the reason the result is
+> forced); each paragraph must earn an "aha"; a sentence that states WHAT without
+> transmitting WHY is a defect. A vivid, insightful physical picture is the primary
+> quality bar. STRICT COMPRESSION OF SECTION I: zero claims not present in Section I;
+> every sentence traceable to it; every sentence load-bearing (if deleting it loses
+> nothing, it goes). No hedging, no citations, no novelty-selling. ~600–900 words, HARD
+> CAP 2 typeset pages — check mechanically in the built PDF. Include the READING
+> CONTRACT: a tiny table of the three layers and what competence each purchases
+> (retell + explain-why / judge / rebuild) — a table is prose, not a formula.
+
+Self-check: exactly ONE `bash "OUT/build_all.sh"` run at its barrier (the writer is the
+only worker in flight at this step, so the §4 single-writer compile rule is respected);
+confirm the Preface lands between the title page and the TOC and fits 2 typeset pages.
+Result: `_agents/preface.result.md` (FIX format).
+
+**Barrier**, then spawn the blind **insight-test verifier** (fresh context; the §3.2
+reviewer failure rules apply). The protocol order IS the test: at first it receives ONLY
+the preface text — from the words alone it must (1) retell the result and (2) write out
+the MECHANISM as it understood it: why the result holds, what pushes what, where the
+tension resolves. ONLY THEN may it open Section I and diff: insight gaps (claims stated
+without their why transmitted), mechanism misunderstandings the prose permitted, orphan
+claims absent from Section I, formula/relational-math leaks, reading-contract violations,
+page overrun. Failures become blocker/major findings. Result:
+`_agents/verify_preface.result.md` (FINDINGS format; `NO FINDINGS` allowed).
+
+If findings exist, spawn a **preface fixer** on `preface.tex` (+ the front-matter hook) —
+result: `_agents/preffix.result.md` (FIX format). At the barrier dispatch exactly ONE
+`build_all.sh` run (fixers never run it themselves), so Phase E starts from a clean full
+build that includes Section I and the Preface. Rubric note: the Phase G referee judges
+Section I AND the Preface inside the EXISTING dimensions 1 (Self-containedness) and 7
 (Pedagogical flow) — violations cost points there and may be filed as blockers; there is
-no seventh hard gate and no weight change.
+no seventh hard gate and no weight change; gates stay exactly G1–G6.
 
 ### Phase E — Professional typesetting layer (1 worker, barrier)
 
@@ -482,8 +533,8 @@ AND tell the user: mode, accepted verdict, final score + gates, typeset status
 Cheap first pass for early iteration. Trims: the three C2 lenses collapse into ONE
 combined math+numeric+pedagogy worker per chapter (result:
 `_agents/verify_<id>_all.result.md`); a single referee round; Phase F skipped. **Never
-trims:** Phase B including the independent audit, Phase D2 (Synthesis, including its
-verifier), clean three-pass builds, or Phase E.
+trims:** Phase B including the independent audit, Phase D2 (Synthesis — Section I +
+Preface, including both verifiers), clean three-pass builds, or Phase E.
 Output is explicitly **draft grade — rubric compliance not claimed**; label it so in the
 final report.
 
@@ -508,7 +559,8 @@ final report.
 *Provenance: framework-neutral port of the paper2notes Claude Code skill (v2.3.0,
 github.com/Shiling42/paper2notes); the phase plan mirrors
 `references/build_workflow_template.js` one-for-one (Scaffold, Example+audit, Draft/
-3-lens-Verify/Fix, Assemble, Synthesis, Typeset, Figures, Referee-loop, Final). The method was
+3-lens-Verify/Fix, Assemble, Synthesis (Section I + Preface), Typeset, Figures,
+Referee-loop, Final). The method was
 distilled from a real run that expanded a terse ~11-page PRX paper into a 131-page
 professionally typeset lecture note (clean build, all six hard gates green, referee
 95/100, ~70 agents / ~3.5 h).*

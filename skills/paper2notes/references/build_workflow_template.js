@@ -15,7 +15,8 @@
  *   Phase D  Assemble     write appendices, stitch everything, unify notation, full 3-pass build
  *   Phase E  Synthesis    write Section I — the PRL-style opening article — from the FINISHED
  *                         chapters; the chapter marked synthesis:true in CHAPTERS is skipped
- *                         by the per-chapter drafting pipeline (Phase C) and written here
+ *                         by the per-chapter drafting pipeline (Phase C) and written here;
+ *                         then compress Section I into the 1-2 page zero-formula Preface
  *   Phase F  Typeset      back up the plain preamble, layer the professional typographic design
  *                         (typesetting_guide.md discipline) in a sandbox, LOOK, then apply live
  *                         (non-fatal: on failure the run logs it and continues with the plain
@@ -113,7 +114,7 @@ export const meta = {
     { title: 'Draft', detail: 'one agent per chapter writes full pedagogical text + figures' },
     { title: 'Verify', detail: '3 adversarial lenses per chapter (math/numeric/pedagogy), then fix' },
     { title: 'Assemble', detail: 'appendices, stitch, unify notation, full pdflatex build' },
-    { title: 'Synthesis', detail: 'write Section I — the PRL-style opening article — from the finished chapters' },
+    { title: 'Synthesis', detail: 'write Section I — the PRL-style opening article — from the finished chapters, then compress Section I into the 1-2 page zero-formula Preface' },
     { title: 'Typeset', detail: 'back up plain preamble, layer the professional design, sandbox-build, visually inspect, apply live' },
     { title: 'Figures', detail: 'render full PDF, visually check every figure, fix' },
     { title: 'Referee', detail: 'score the acceptance rubric; loop fixes until hard gates pass and the score clears the threshold' },
@@ -140,8 +141,9 @@ const A = (typeof args === 'object' && args) ? args : {}
 //        round, and no figure-review loop. Light NEVER trims: the Phase B
 //        ground-truth numbers (including the independent audit), clean 3-pass
 //        builds, the Synthesis phase (Section I is ALWAYS written from the
-//        finished chapters), or the Typeset phase. Light output is DRAFT
-//        GRADE — rubric compliance not claimed.
+//        finished chapters, and the Preface steps — writer, blind insight-test,
+//        fixer — are part of Synthesis and NEVER trimmed), or the Typeset
+//        phase. Light output is DRAFT GRADE — rubric compliance not claimed.
 const MODE = A.mode === 'light' ? 'light' : 'full'
 // SKILLREF : OPTIONAL absolute path to the paper2notes skill package
 //        root (the directory containing SKILL.md and references/). When set:
@@ -184,6 +186,7 @@ const TEXBIN = A.texbin || '/Library/TeX/texbin'
 const NUMBERS  = OUT + '/numbers.md'      // SINGLE SOURCE OF TRUTH for every number
 const CONTRACT = OUT + '/contract.md'     // notation & style contract every agent obeys
 const MASTER   = OUT + '/lecture_notes.tex'
+const PREFACE  = OUT + '/preface.tex'     // 1-2 page zero-formula Preface (Synthesis writes it LAST)
 const chFile   = (id) => `${OUT}/chapters/${id}.tex`
 const sourcesList = SOURCES.join(', ') || '(none)'
 
@@ -458,7 +461,9 @@ const RUBRIC = (A.rubric || `
 ACCEPTANCE RUBRIC (100 pts). Hard gates must ALL pass regardless of score.
 1 Self-containedness (15): nothing used before defined; the target reader can follow; Section I
   (the opening article) alone lets a reader judge the paper's central claim via a complete chain
-  of formally stated results.
+  of formally stated results; the Preface alone (the compression telescope's first layer) lets a
+  reader RETELL the result to an outsider AND EXPLAIN THE MECHANISM — why it holds, what competes
+  with what, where the tension resolves.
 2 Concept depth (15): each named object built from scratch with intuition + a small check.
 3 Theorem expansion (15): every theorem/lemma -> assumptions, intuition, gap-free proof,
   with WHERE each assumption is used.
@@ -470,7 +475,8 @@ ACCEPTANCE RUBRIC (100 pts). Hard gates must ALL pass regardless of score.
   professionally typeset table (a bare inline number is never its only presentation).
 7 Pedagogical flow / physics-first (5): picture+application first; general before example;
   one coherent arc; Section I reads as a PRL-style story (physics first, no proofs, no selling),
-  with dependency DAG and reading routes.
+  with dependency DAG and reading routes; the Preface is physical-picture-first, zero-formula
+  prose, a strict compression of Section I, at most 2 typeset pages.
 8 Build & reproducibility (5): pdflatex x3 clean; numbers traceable to scripts.
 HARD GATES: compiles clean; zero numeric mismatches vs numbers.md; zero unexplained
 load-bearing concepts; every theorem has a full proof; running example present in every core
@@ -872,7 +878,8 @@ const SYNTH = CHAPTERS.find(c => c.synthesis)
 if (!SYNTH) {
   log('Synthesis: no chapter marked synthesis:true in CHAPTERS — skipping the phase.')
 } else {
-  log('Phase E: writing Section I — the PRL-style opening article — from the finished chapters.')
+  log('Phase E: writing Section I — the PRL-style opening article — from the finished chapters,'
+    + ' then compressing it into the 1-2 page zero-formula Preface.')
 
   // E1: the writer reads the whole finished book, then writes the article.
   await agent(`Write SECTION I of the lecture notes — Chapter ${SYNTH.num}, "${SYNTH.title}" —
@@ -949,6 +956,98 @@ physics-first story, 8-12 pages). Recompile with
   bash "${OUT}/build_all.sh"  and confirm the master still builds clean. Return what you applied
 and both compile statuses.`,
       { label: 'synthesis-fix', phase: 'Synthesis', schema: FIX_SCHEMA, effort: 'high' })
+  }
+
+  // E4: compress the finished Section I into the PREFACE — the first layer of the
+  // COMPRESSION TELESCOPE. Written LAST by design: the compression chain is strictly
+  // one-way (body -> Section I -> Preface), so this step follows the Section I fix pass.
+  const prefaceWrite = await agent(`Write the PREFACE of the lecture notes into ${PREFACE} — the
+FIRST layer of the notes' COMPRESSION TELESCOPE. The notes tell ONE story at three zoom levels,
+each a lossy compression of the next, each complete at its own resolution ("compression is
+intelligence"): the Preface (1-2 pages) lets a reader RETELL the result to an outsider AND
+EXPLAIN THE MECHANISM — why it holds, what competes with what, where the tension resolves (the
+INSIGHT TEST: retell + explain-why); Section I (8-12 pages) lets a reader JUDGE the paper's
+central claim (the D-test); the body (full notes) lets a reader REBUILD every proof and number.
+
+READ ONLY: the FINISHED Section I at ${chFile(SYNTH.id)} (your sole content source) and
+${CONTRACT} (for terminology only). Do NOT open the body chapters, the paper, or ${NUMBERS} —
+the compression chain is strictly one-way: body -> Section I -> Preface.
+
+PREFACE RULES (all enforceable; the blind insight-test verifier checks each):
+- RADICAL ZERO-FORMULA: no display math, no equations, no relational math (=, inequalities,
+  arrows-as-implication) anywhere; inline math symbols at most as proper NAMES (budget: a few,
+  each defined in words in the same sentence). No figures either — the preface IS a picture
+  painted in words.
+- PHYSICAL-PICTURE-FIRST PROSE, not dry summary. 物理图像 here means the MENTAL picture of the
+  physics — mechanism-level intuition, NOT literal drawings or figures. Every claim is carried
+  by its WHY: the causal story, the competing effects, the reason the result is forced.
+  Insight-dense: each paragraph must earn an "aha"; a sentence that states WHAT without
+  transmitting WHY is a defect. 物理图像清晰 (a vivid, insightful physical picture) is the
+  primary quality bar.
+- STRICT COMPRESSION OF SECTION I: introduces ZERO claims not present in Section I; every
+  sentence traceable; every sentence load-bearing (if deleting it loses nothing, it goes).
+- No hedging, no citations, no novelty-selling.
+- ~600-900 words, HARD CAP 2 typeset pages (checked mechanically in the built PDF).
+- Contains the READING CONTRACT: a tiny table of the three layers and what competence each
+  purchase buys (retell + explain-why / judge / rebuild). A table is prose, not a formula —
+  allowed.
+- Placement: unnumbered front matter between the title page and the table of contents.
+
+DELIVERABLES:
+1. ${PREFACE} — begins with \\chapter*{Preface} (add \\addcontentsline{toc}{chapter}{Preface}
+   only if it reads tastefully in the TOC).
+2. Wire the hook: in ${MASTER}, insert — or uncomment, if the scaffold's commented
+   "% \\input{preface}" hook is present — the line \\input{preface} BETWEEN \\maketitle and
+   \\tableofcontents.
+3. SELF-CHECK: run  bash "${OUT}/build_all.sh"  and fix every error until the front matter
+   compiles clean.
+
+Return: the preface word count, its typeset page count in the built PDF (must be <= 2), and the
+compile status.`,
+    { label: 'preface-write', phase: 'Synthesis', effort: 'high' })
+  log('Preface: ' + (prefaceWrite ? String(prefaceWrite).slice(0, 300) : 'writer returned nothing'))
+
+  // E5: the BLIND INSIGHT-TEST — the Preface's analogue of the D-test proxy. The
+  // verifier reads the preface FIRST and commits to an understanding before diffing.
+  const prefReview = await agent(`BLIND INSIGHT-TEST of the Preface at ${PREFACE}. Follow this
+PROTOCOL ORDER exactly — the blindness is the point:
+STEP 1 (blind): read ONLY ${PREFACE}. From its words alone, write out (a) a RETELLING of the
+result as you would give it to an outsider, and (b) the MECHANISM as you understood it — why the
+result holds, what pushes what, where the tension resolves. Commit to this BEFORE opening
+anything else.
+STEP 2 (diff): only NOW open Section I at ${chFile(SYNTH.id)} and diff your Step-1 understanding
+against it. File findings for:
+(a) INSIGHT GAPS: claims whose WHY the prose failed to transmit (you could repeat the WHAT but
+    not explain the mechanism);
+(b) MECHANISM MISREADINGS the prose permitted (your Step-1 mechanism was wrong and the wording
+    allowed it);
+(c) ORPHAN CLAIMS: anything in the preface not present in Section I (strict compression);
+(d) FORMULA / RELATIONAL-MATH LEAKS: also grep the .tex for math environments and display math
+    (equation, align, \\[, $$) and for relational math (=, inequalities, implication arrows)
+    used as content rather than as a defined proper name;
+(e) MISSING READING-CONTRACT TABLE (the three layers and what competence each purchase buys:
+    retell + explain-why / judge / rebuild);
+(f) HEDGING / CITATION / NOVELTY-SELLING genes;
+(g) PAGE-CAP OVERRUN: check the built PDF's page count for the preface — more than 2 typeset
+    pages is a violation.
+Severity calibration: insight gaps, mechanism misreadings, orphan claims, formula leaks, a
+missing reading contract, and page overruns are blocker/major findings. Give a concrete fix for
+each.`,
+    { label: 'preface-verify', phase: 'Synthesis', schema: FINDINGS_SCHEMA, effort: 'high' })
+
+  // E6: apply blockers/majors only if the insight test found any (null-guarded).
+  const prefIssues = ((prefReview && prefReview.findings) || [])
+    .filter(f => f.severity === 'blocker' || f.severity === 'major')
+  if (prefIssues.length) {
+    await agent(`Apply fixes to the Preface at ${PREFACE}. The blind insight-test found:
+${renderFindings(prefIssues)}
+
+Resolve every blocker and major while keeping the Preface design intact: a 1-2 page zero-formula
+compression of Section I ONLY (zero new claims), physical-picture-first prose in which every
+claim carries its WHY, the reading-contract table, no hedging/citations/selling, ~600-900 words.
+Then rebuild with  bash "${OUT}/build_all.sh"  until clean and confirm the preface still fits in
+2 typeset pages. Return what you applied and the compile status.`,
+      { label: 'preface-fix', phase: 'Synthesis', schema: FIX_SCHEMA, effort: 'high' })
   }
 }
 
@@ -1094,6 +1193,13 @@ definitions with pointers to the rigorous versions; the theorem-dependency DAG w
 chapter/section tags; reader-type reading routes; a PRL-style physics-first story with no selling
 tone, no citation politics, no "it can be shown"; 8-12 pages. Deduct violations under dimensions
 1 (Self-containedness) and 7 (Pedagogical flow) and file BLOCKERS for them — again scoring
+pressure, NOT a seventh hard gate. Also evaluate the PREFACE (${PREFACE}, unnumbered front
+matter before the TOC) in the insight-test spirit: from its words alone a reader can RETELL the
+result AND EXPLAIN THE MECHANISM (why it holds, what pushes what, where the tension resolves);
+RADICAL zero-formula (no equations, no relational math; inline symbols only as proper names
+defined in words); STRICT compression of Section I (zero claims not in Section I); the
+reading-contract table present; no hedging/citations/selling; at most 2 typeset pages in the
+built PDF. Deduct violations under dimensions 1 and 7 and file BLOCKERS for them — again scoring
 pressure, NOT a seventh hard gate.` : ''} Return the structured score.`,
     { label: 'referee-r' + round, phase: 'Referee', schema: SCORE_SCHEMA, effort: 'high' })
 

@@ -1,5 +1,9 @@
 # Changelog
 
+## 2.4.0 — 2026-07-07
+
+**Preface: the compression telescope gets its top layer.** The Synthesis stage now ends by compressing the finished Section I into a 1-2 page **Preface**: radical zero-formula (no equations or relational math anywhere), insight-dense physical-picture prose — every claim carries its WHY — with the three-layer reading contract (Preface: retell + explain the mechanism → Section I: judge the claim → body: rebuild everything). Strict one-way compression (body → Section I → Preface, zero new claims), ~600-900 words with a hard 2-page cap, verified by a blind insight-test protocol: the verifier first reads only the Preface, writes out the mechanism as understood, then diffs against Section I to locate insight gaps. Wired into both editions; scaffold master.tex gains a front-matter hook; rubric criteria fold into dimensions 1 and 7 — gates stay at six.
+
 ## 2.3.1 — 2026-07-07
 
 - Added `references/scaffold/clean.sh` — whitelist-based end-of-build housekeeping (removes LaTeX aux files, `_single_*` compile wrappers, root-level render PNGs, `typeset_sandbox/`, pycache/.DS_Store; always keeps sources, `numbers.md`, `code/`, `figs/`, `*.bbl`, the backup preamble, and the final PDF; dry-run by default, refuses to run outside a lecture-notes project). Wired into the workflow's final-build step, both SKILL.md editions, and the new-paper checklist.
