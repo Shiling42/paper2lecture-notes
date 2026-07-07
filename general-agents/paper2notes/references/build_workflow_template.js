@@ -13,12 +13,15 @@
  *                         (math / numeric / pedagogy) in parallel -> apply fixes -> recompile
  *                         (light mode: ONE combined lens instead of three — see MODE)
  *   Phase D  Assemble     write appendices, stitch everything, unify notation, full 3-pass build
- *   Phase E  Typeset      back up the plain preamble, layer the professional typographic design
+ *   Phase E  Synthesis    write Section I — the PRL-style opening article — from the FINISHED
+ *                         chapters; the chapter marked synthesis:true in CHAPTERS is skipped
+ *                         by the per-chapter drafting pipeline (Phase C) and written here
+ *   Phase F  Typeset      back up the plain preamble, layer the professional typographic design
  *                         (typesetting_guide.md discipline) in a sandbox, LOOK, then apply live
  *                         (non-fatal: on failure the run logs it and continues with the plain
  *                         preamble; the outcome is surfaced in the final return object)
- *   Phase F  Figures      render the full PDF, visually inspect every figure, fix
- *   Phase G  Referee      score the rubric; bounded fix loop until all HARD GATES pass
+ *   Phase G  Figures      render the full PDF, visually inspect every figure, fix
+ *   Phase H  Referee      score the rubric; bounded fix loop until all HARD GATES pass
  *                         AND the score clears THRESHOLD
  *
  * PROVENANCE
@@ -46,7 +49,9 @@
  *     4. CONCEPTS      — the named objects that MUST be built from scratch.
  *     5. EXAMPLE_SPEC  — the running example + exactly what the verifier must
  *                        compute and cross-check (the linchpin of correctness).
- *     6. CHAPTERS      — the per-chapter array (id, title, source, covers, figures).
+ *     6. CHAPTERS      — the per-chapter array (id, title, source, covers, figures);
+ *                        the entry marked synthesis:true is Section I, written LAST
+ *                        by the Synthesis phase (the drafting pipeline skips it).
  *     7. RUBRIC        — the acceptance dimensions + hard gates + THRESHOLD
  *                        (numeric acceptance bar, default 90/100).
  *   The agent prompts read everything else off CONFIG; you should not need to
@@ -108,6 +113,7 @@ export const meta = {
     { title: 'Draft', detail: 'one agent per chapter writes full pedagogical text + figures' },
     { title: 'Verify', detail: '3 adversarial lenses per chapter (math/numeric/pedagogy), then fix' },
     { title: 'Assemble', detail: 'appendices, stitch, unify notation, full pdflatex build' },
+    { title: 'Synthesis', detail: 'write Section I — the PRL-style opening article — from the finished chapters' },
     { title: 'Typeset', detail: 'back up plain preamble, layer the professional design, sandbox-build, visually inspect, apply live' },
     { title: 'Figures', detail: 'render full PDF, visually check every figure, fix' },
     { title: 'Referee', detail: 'score the acceptance rubric; loop fixes until hard gates pass and the score clears the threshold' },
@@ -133,8 +139,9 @@ const A = (typeof args === 'object' && args) ? args : {}
 //        adversarial prompt) instead of three parallel lenses, a single referee
 //        round, and no figure-review loop. Light NEVER trims: the Phase B
 //        ground-truth numbers (including the independent audit), clean 3-pass
-//        builds, or the Typeset phase. Light output is DRAFT GRADE — rubric
-//        compliance not claimed.
+//        builds, the Synthesis phase (Section I is ALWAYS written from the
+//        finished chapters), or the Typeset phase. Light output is DRAFT
+//        GRADE — rubric compliance not claimed.
 const MODE = A.mode === 'light' ? 'light' : 'full'
 // SKILLREF : OPTIONAL absolute path to the paper2notes skill package
 //        root (the directory containing SKILL.md and references/). When set:
@@ -309,23 +316,46 @@ numbers.md SECTIONS (each entry cites its producing script; 4-6 sig figs; reprod
 //   num     chapter number
 //   title   chapter title
 //   core    true if the running example MUST appear here (a hard-gate chapter)
+//   synthesis  true for the ONE chapter written LAST by the Synthesis phase
+//           (Section I, the opening article); the per-chapter drafting pipeline
+//           (Phase C) EXCLUDES it — the scaffold still stubs it and the master
+//           still \inputs it.
 //   source  where the chapter's content comes from (paper line ranges + machinery)
 //   covers  a detailed brief of what to derive/prove/illustrate (the meat)
 //   figures what figures to author / reuse
 // REPLACE FOR YOUR PAPER: swap the whole array; the pipeline length adapts automatically.
 const CHAPTERS = A.chapters || [
+  // REPLACE FOR YOUR PAPER: the synthesis chapter below is Section I — the PRL-style
+  // opening article, written LAST by the Synthesis phase. Keep synthesis:true, num 0,
+  // core:false; swap the Mpemba story, chain, and figures for your paper's.
   {
-    id: 'ch0', num: 0, core: false,
-    title: 'Prologue: the puzzle of anomalously fast relaxation',
-    source: `Paper ${PAPER} intro (~lines 75-143).`,
-    covers: `Recap the strong Mpemba effect for the target reader: the Lu-Raz eigenmode
-decomposition p(t)=pi^b + sum_alpha a_alpha(T) e^{-lambda_alpha t} ell_alpha, the slow-mode
-overlap a_1(T), strong effect = a_1(T_M)=0 for T_M != T_b. Explain WHY "the condition is a
-statement about eigenvectors" is unsatisfying. State the punchline: three topological layers
-(graph fixes one slow cut; energy-ordering FRUSTRATION creates and counts zeros; WINDING
-protects the count). Name the running examples; end with a roadmap. Physics-first, no heavy
-algebra yet.`,
-    figures: 'Optional schematic of the three-layer logic.',
+    id: 'ch0', num: 0, core: false, synthesis: true,
+    title: 'The Mpemba effect as topological frustration: the whole story',
+    source: `Written LAST, in the Synthesis phase, from the FINISHED chapters in ${OUT}/chapters/
+(it summarizes the completed book — facts, not plans — so the paper is only background here).`,
+    covers: `Section I: a PRL-style STANDALONE ARTICLE that replaces a conventional prologue and
+tells the whole story of the notes. The FIRST paragraph answers why it matters (anomalously fast
+relaxation — the Mpemba effect — and why "the condition is a statement about eigenvectors" is
+unsatisfying); physics-first storytelling and "what is the physics behind this" carried through.
+EVERY major theorem of the notes appears as a FORMAL STATEMENT (precise assumptions +
+conclusion, in a real theorem environment, NO proof, no mechanism footnote) embedded at the
+story's load-bearing points, forming a COMPLETE LOGICAL CHAIN — what implies what, via which
+assumption, visible at a glance. For Mpemba the chain is the three topological layers:
+generalized Fiedler / nodal-domain theory fixes ONE slow (in general multi-edge) cut -> the
+matrix-forest dictionary makes the charges omega combinatorial -> frustrated cut-energy
+interleavings create and count the real zeros of Z_omega (Descartes M<=V-1, parity) -> the
+winding number protects the count (selection rules, saddle-node folds) -> dark modules localize
+the index into design rules. Objects pay only a WORKING-DEFINITION tax: 1-2 lines, precise
+enough to parse the formal statements, plus a pointer to the rigorous definition's chapter.
+Proofs, proof-sketch levers, and NUMBERS stay in the body chapters. SUCCESS TEST (the D-test): a
+reader of this chapter ALONE can say "I believe / don't believe the paper's central claim,
+because ..." — judgment powered by the logical chain. Guidance devices (both required): the
+theorem-dependency DAG (nodes tagged with the chapter/section numbers where the proofs live) and
+reader-type READING ROUTES (e.g. user / verifier / teacher paths). FORBIDDEN GENES (from PRL —
+never reproduce): novelty-selling tone ("first ever", breakthrough talk), citation politics,
+compression pain ("it can be shown"). Length: 8-12 pages, one-sitting readable, scaled to
+content.`,
+    figures: 'TikZ: the theorem-dependency DAG (nodes tagged with chapter/section numbers); one no-numbers story schematic of the three-layer logic.',
   },
   {
     id: 'ch1', num: 1, core: false,
@@ -426,7 +456,9 @@ const THRESHOLD = Number.isFinite(A.threshold) ? A.threshold : 90
 // REPLACE FOR YOUR PAPER: the gate-6 structural-invariant wording in HARD GATES below ("a MULTI-EDGE cut, not a single bridge" is Mpemba-specific).
 const RUBRIC = (A.rubric || `
 ACCEPTANCE RUBRIC (100 pts). Hard gates must ALL pass regardless of score.
-1 Self-containedness (15): nothing used before defined; the target reader can follow.
+1 Self-containedness (15): nothing used before defined; the target reader can follow; Section I
+  (the opening article) alone lets a reader judge the paper's central claim via a complete chain
+  of formally stated results.
 2 Concept depth (15): each named object built from scratch with intuition + a small check.
 3 Theorem expansion (15): every theorem/lemma -> assumptions, intuition, gap-free proof,
   with WHERE each assumption is used.
@@ -437,7 +469,8 @@ ACCEPTANCE RUBRIC (100 pts). Hard gates must ALL pass regardless of score.
   every load-bearing numbers.md quantity ALSO appears in at least one figure or
   professionally typeset table (a bare inline number is never its only presentation).
 7 Pedagogical flow / physics-first (5): picture+application first; general before example;
-  one coherent arc.
+  one coherent arc; Section I reads as a PRL-style story (physics first, no proofs, no selling),
+  with dependency DAG and reading routes.
 8 Build & reproducibility (5): pdflatex x3 clean; numbers traceable to scripts.
 HARD GATES: compiles clean; zero numeric mismatches vs numbers.md; zero unexplained
 load-bearing concepts; every theorem has a full proof; running example present in every core
@@ -676,7 +709,12 @@ Re-run, verify, rewrite numbers.md. Return what changed and the corrected headli
 
 // =================================================================== PHASE C: draft -> verify(3 lenses) -> fix, PIPELINED per chapter
 phase('Draft')
-log('Phase C: drafting ' + CHAPTERS.length + ' chapters; each is adversarially verified ('
+// The chapter marked synthesis:true (Section I) is EXCLUDED here: it summarizes the
+// FINISHED book, so the Synthesis phase (after Assemble) writes it. The scaffold
+// still stubbed its file and the master still \inputs it, so the build stays green.
+const DRAFT_CHAPTERS = CHAPTERS.filter(c => !c.synthesis)
+log('Phase C: drafting ' + DRAFT_CHAPTERS.length + ' chapters (the synthesis chapter is written'
+  + ' later, in the Synthesis phase); each is adversarially verified ('
   + (MODE === 'light' ? 'one combined light-mode lens' : 'math/numeric/pedagogy in parallel')
   + ') and fixed as it completes.')
 
@@ -684,7 +722,7 @@ log('Phase C: drafting ' + CHAPTERS.length + ' chapters; each is adversarially v
 // is already being drafted. Each stage receives the previous stage's result plus the
 // original CHAPTER spec and its index.
 const chapterResults = await pipeline(
-  CHAPTERS,
+  DRAFT_CHAPTERS,
 
   // STAGE 1 — draft the chapter and self-compile it.
   (ch) => agent(`Write Chapter ${ch.num} — "${ch.title}" — of the lecture notes into
@@ -786,7 +824,8 @@ and why, and the compile status.`,
 )
 
 const drafted = (chapterResults || []).filter(Boolean)
-log('Chapters drafted & fixed: ' + drafted.length + '/' + CHAPTERS.length)
+log('Chapters drafted & fixed: ' + drafted.length + '/' + DRAFT_CHAPTERS.length
+  + ' (Section I is written after Assemble, in the Synthesis phase)')
 
 // =================================================================== PHASE D: appendices, assemble, full compile
 phase('Assemble')
@@ -823,9 +862,99 @@ status, page count, residual warnings worth noting.`,
 
 log('Assembly compiles: ' + (assembleResult ? assembleResult.compiles : 'unknown'))
 
-// =================================================================== PHASE E: professional typesetting layer
+// =================================================================== PHASE E: synthesis — Section I from the finished book
+phase('Synthesis')
+
+// Section I (the chapter marked synthesis:true) can only be written NOW: it
+// summarizes the FINISHED chapters — facts, not plans. This phase runs in BOTH
+// modes: light mode never trims it.
+const SYNTH = CHAPTERS.find(c => c.synthesis)
+if (!SYNTH) {
+  log('Synthesis: no chapter marked synthesis:true in CHAPTERS — skipping the phase.')
+} else {
+  log('Phase E: writing Section I — the PRL-style opening article — from the finished chapters.')
+
+  // E1: the writer reads the whole finished book, then writes the article.
+  await agent(`Write SECTION I of the lecture notes — Chapter ${SYNTH.num}, "${SYNTH.title}" —
+into ${chFile(SYNTH.id)} (OVERWRITE the stub; begin with \\chapter{${SYNTH.title}}\\label{ch:${SYNTH.id}}).
+
+BEFORE WRITING, read the FINISHED book: EVERY drafted chapter file in ${OUT}/chapters/,
+${CONTRACT} (notation, labels, theorem environments), and the SECTION HEADERS of ${NUMBERS} (to
+know what ground truth exists — you will NOT quote its numbers here). You are summarizing a
+finished book: state facts, never plans.
+
+${STANDARDS}
+
+THE SECTION-I DESIGN (follow it exactly; for THIS chapter it OVERRIDES the standards' full-proof
+and numbers items — proofs and numbers live in the body chapters):
+- Section I is a PRL-STYLE STANDALONE ARTICLE that replaces a conventional prologue:
+  physics-first storytelling; the FIRST paragraph answers why the problem matters; intuition and
+  "what is the physics behind this" carried through the whole piece.
+- EVERY major theorem of the notes appears as a FORMAL STATEMENT — precise assumptions +
+  conclusion, in a real theorem environment, NO proof, no mechanism footnote — embedded at the
+  story's load-bearing points, so the COMPLETE LOGICAL CHAIN (what implies what, via which
+  assumption) is visible at a glance. Each formal statement carries an explicit pointer to the
+  chapter where it is proved.
+- Objects pay only a WORKING-DEFINITION tax: 1-2 lines, precise enough to parse the formal
+  statements, plus a pointer to the rigorous definition in the body.
+- Proofs, proof-sketch levers, and NUMBERS stay in the body chapters — none of them here.
+- SUCCESS TEST (the D-test): a reader of Section I ALONE must be able to say "I believe / don't
+  believe the paper's central claim, because ..." — judgment powered by the logical chain.
+- GUIDANCE DEVICES (both required): (1) a theorem-dependency DAG figure (TikZ), nodes tagged
+  with the chapter/section numbers where the proofs/details live; (2) reader-type READING
+  ROUTES (e.g. user / verifier / teacher paths) telling each reader which chapters to visit.
+- FIGURES: exactly the DAG plus ONE no-numbers phenomenon/mechanism story schematic.
+  Spec: ${SYNTH.figures} Numeric figures stay in the body.
+- LENGTH: 8-12 pages, one-sitting readable; scale with content.
+- FORBIDDEN GENES (inherited from PRL — never reproduce): novelty-selling tone ("first ever",
+  breakthrough talk); citation politics; compression pain ("it can be shown").
+
+CHAPTER BRIEF (the worked spec for this book):
+${SYNTH.covers}
+
+SELF-CHECK before finishing: run  bash "${OUT}/compile_one.sh" "${chFile(SYNTH.id)}"  and fix
+every LaTeX error until it reports PASS. Do not finish on a FAIL. Return: the chain of formally
+stated theorems (each with its chapter pointer), the figures, and the compile status.`,
+    { label: 'synthesis-write', phase: 'Synthesis', effort: 'high' })
+
+  // E2: adversarial verification — the D-test proxy.
+  const synthReview = await agent(`ADVERSARIAL REVIEW of Section I at ${chFile(SYNTH.id)} — the
+D-test proxy. Read it against the finished chapters in ${OUT}/chapters/ and check, precisely:
+(a) every core-chapter main theorem is FORMALLY STATED (precise assumptions + conclusion, real
+    theorem environment) — list any that is missing;
+(b) the logical chain is COMPLETE: no orphan claims — every claim is either formally stated or
+    explicitly follows from stated ones, with the licensing assumption named;
+(c) every symbol used carries a WORKING DEFINITION (1-2 lines) before use, with a pointer to the
+    rigorous definition's chapter;
+(d) NO proofs or proof sketches leaked in;
+(e) no forbidden genes: novelty-selling tone, citation politics, "it can be shown" compression;
+(f) the theorem-dependency DAG figure is present and its nodes carry the CORRECT chapter/section
+    tags (cross-check against the actual chapter files);
+(g) the reader-type reading routes are present;
+(h) the length is in the 8-12 page band.
+Give a concrete fix for each finding.`,
+    { label: 'synthesis-verify', phase: 'Synthesis', schema: FINDINGS_SCHEMA, effort: 'high' })
+
+  // E3: apply blockers/majors only if the review found any (null-guarded).
+  const synthIssues = ((synthReview && synthReview.findings) || [])
+    .filter(f => f.severity === 'blocker' || f.severity === 'major')
+  if (synthIssues.length) {
+    await agent(`Apply fixes to Section I at ${chFile(SYNTH.id)}. The adversarial review found:
+${renderFindings(synthIssues)}
+
+Resolve every blocker and major while keeping the Section-I design intact (formal statements
+only, working definitions with pointers, no proofs, no numbers, DAG + reading routes, PRL-style
+physics-first story, 8-12 pages). Recompile with
+  bash "${OUT}/compile_one.sh" "${chFile(SYNTH.id)}"  until PASS, then do ONE quick full rebuild:
+  bash "${OUT}/build_all.sh"  and confirm the master still builds clean. Return what you applied
+and both compile statuses.`,
+      { label: 'synthesis-fix', phase: 'Synthesis', schema: FIX_SCHEMA, effort: 'high' })
+  }
+}
+
+// =================================================================== PHASE F: professional typesetting layer
 phase('Typeset')
-log('Phase E: layering the professional typographic design onto the finished content (sandbox first, LOOK, then live).')
+log('Phase F: layering the professional typographic design onto the finished content (sandbox first, LOOK, then live).')
 
 const typesetResult = await agent(`Apply the PROFESSIONAL TYPESETTING LAYER to the assembled lecture notes in ${OUT}.
 The content is finished and builds clean with the plain preamble; your job is to swap in the
@@ -905,11 +1034,11 @@ if (!typesetOk) {
     + ') — continuing with the plain preamble; see `typeset` in the final return object.')
 }
 
-// =================================================================== PHASE F: figure visual check on the rendered PDF
+// =================================================================== PHASE G: figure visual check on the rendered PDF
 phase('Figures')
 log(MODE === 'light'
-  ? 'Phase F: SKIPPED (light mode) — the figure visual-review loop runs only in full mode.'
-  : 'Phase F: rendering the full PDF and visually checking every figure.')
+  ? 'Phase G: SKIPPED (light mode) — the figure visual-review loop runs only in full mode.'
+  : 'Phase G: rendering the full PDF and visually checking every figure.')
 
 if (MODE === 'full') {
   const figReview = await agent(`VISUAL FIGURE REVIEW. The compiled PDF is ${MASTER.replace(/\.tex$/, '.pdf')}.
@@ -932,9 +1061,9 @@ the key quantities, per the project standards. Return what you changed and the c
   }
 }
 
-// =================================================================== PHASE G: referee gate vs rubric, bounded fix loop
+// =================================================================== PHASE H: referee gate vs rubric, bounded fix loop
 phase('Referee')
-log('Phase G: scoring against the acceptance rubric; looping targeted fixes until hard gates pass and the score clears ' + THRESHOLD + '/100.')
+log('Phase H: scoring against the acceptance rubric; looping targeted fixes until hard gates pass and the score clears ' + THRESHOLD + '/100.')
 
 // Bound derived from CONFIG (deterministic — no clock/RNG): 3 rounds in full
 // mode, 1 in light mode (light is a draft-grade pass by design).
@@ -957,7 +1086,15 @@ complete proof; no load-bearing concept is merely cited; all numbers match numbe
 example's structural invariant holds; it compiles. Also verify NUMBERS-AS-FIGURES: every
 load-bearing quantity in ${NUMBERS} must appear in at least one figure or professionally typeset
 table, not only inline — file a BLOCKER for each violation and deduct under the Visualization
-dimension (this is scoring pressure, NOT a seventh hard gate). Return the structured score.`,
+dimension (this is scoring pressure, NOT a seventh hard gate).${SYNTH ? ` Also evaluate SECTION I
+(the opening article, ${chFile(SYNTH.id)}) against the D-test and its design criteria: a reader
+of Section I ALONE can judge the paper's central claim ("I believe / don't believe, because ...")
+via a complete chain of FORMALLY STATED results (assumptions + conclusion, NO proofs); working
+definitions with pointers to the rigorous versions; the theorem-dependency DAG with correct
+chapter/section tags; reader-type reading routes; a PRL-style physics-first story with no selling
+tone, no citation politics, no "it can be shown"; 8-12 pages. Deduct violations under dimensions
+1 (Self-containedness) and 7 (Pedagogical flow) and file BLOCKERS for them — again scoring
+pressure, NOT a seventh hard gate.` : ''} Return the structured score.`,
     { label: 'referee-r' + round, phase: 'Referee', schema: SCORE_SCHEMA, effort: 'high' })
 
   const gatesPass = allGatesPass(score && score.hardGates)
@@ -1012,7 +1149,8 @@ return {
     ? 'professional (' + (typesetResult.source || 'unknown') + ' preamble)'
     : 'FAILED — plain preamble in use (see preamble_plain_backup.tex)',
   chaptersDone: drafted.length,
-  totalChapters: CHAPTERS.length,
+  totalChapters: DRAFT_CHAPTERS.length,
+  synthesisChapter: SYNTH ? SYNTH.id : null,   // Section I, written in the Synthesis phase
   exampleHeadline: exDesign ? String(exDesign).slice(0, 600) : null,
   finalScore: score ? score.total : null,
   hardGates: score ? score.hardGates : null,

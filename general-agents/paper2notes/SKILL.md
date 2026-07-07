@@ -114,10 +114,13 @@ KEY CORRECTNESS TRAP: <FILL IN: the one convention/sign/index trap in YOUR paper
  independent ways; plus the required parameter regimes/cases.>
 
 ## Chapters
-| id | num | core | title | source | covers | figures |
-|----|-----|------|-------|--------|--------|---------|
+| id | num | core | synthesis | title | source | covers | figures |
+|----|-----|------|-----------|-------|--------|--------|---------|
 <FILL IN: one row per chapter. core=yes ⇒ the running example MUST appear (hard gate).
- "covers" is the drafting brief — detailed; "source" cites paper sections/line ranges.>
+ "covers" is the drafting brief — detailed; "source" cites paper sections/line ranges.
+ Mark EXACTLY ONE chapter (usually ch0) synthesis=yes: it is EXCLUDED from the Phase C1
+ drafting fan-out and written by Phase D2 after assembly; its "covers" field may stay one
+ line ("Section I — see Phase D2").>
 
 ## Acceptance
 THRESHOLD: 90     # accepted = score ≥ THRESHOLD AND all 6 hard gates green AND 0 blockers
@@ -192,7 +195,8 @@ reused across workers or rounds.** Fixed formats:
 - If it fails again: for a *reviewer lens or figure-reviewer*, record `LENS FAILED` in the
   state file and continue — but never silently treat a dead reviewer as "no findings";
   re-run it later if at all possible. For a *builder* (scaffold / drafter / fixer /
-  appendices / assembler / repro), the phase cannot proceed — diagnose from its stdout/log
+  appendices / assembler / synthesis writer / repro), the phase cannot proceed — diagnose
+  from its stdout/log
   before continuing.
 - A well-formed FIX result reporting `compiles: FAIL` blocks its barrier exactly like a
   dead builder: re-dispatch the worker with the failing log excerpt appended to its prompt.
@@ -219,7 +223,7 @@ only `compile_one.sh` (unique per-chapter jobnames) is concurrency-safe. Update
 
 ```markdown
 # BUILD_STATE — <TITLE>
-A scaffold [ ]   B numbers [ ] audit [ ] repair [–]   D assemble [ ]
+A scaffold [ ]   B numbers [ ] audit [ ] repair [–]   D assemble [ ]   D2 synth [ ]
 C chapters: ch0 [draft|lenses|fixed]  ch1 [...]  (one line per chapter)
 E typeset [ ]    F figures [ ]    G referee: round 0/3, score –, gates –, blockers –
 ## Dispatch log (append-only)
@@ -290,7 +294,9 @@ included and visible in the TOC). Result file: `_agents/scaffold.result.md` (FIX
 
 Once `numbers.md` is frozen, chapters are independent given `contract.md` + `numbers.md`.
 
-- **C1 drafting fan-out:** spawn one **drafter** per chapter. Each drafter owns exactly
+- **C1 drafting fan-out:** spawn one **drafter** per chapter — EXCEPT the chapter marked
+  `synthesis=yes` in the Job Card, which stays a scaffold stub until Phase D2 writes it.
+  Each drafter owns exactly
   `OUT/chapters/<id>.tex` plus its own-prefixed figure files (`figs/<id>_*`,
   `code/<id>_fig*`): full lecture-note prose (intuition before formalism, every symbol
   defined at first use, full proofs in the main text, general theorem before example), the
@@ -338,6 +344,57 @@ costs wall-clock time.
   appendices actually appear in the built PDF and its TOC**. Never "simplify"
   `preamble.tex` to dodge an error — fix the offending chapter construct. Result:
   `_agents/assemble.result.md` (FIX format, incl. final page count).
+
+### Phase D2 — Synthesis (1 worker + 1 verifier, barriers)
+
+Runs AFTER the assemble barrier and BEFORE Phase E: Section I is written LAST, about the
+FINISHED book — it summarizes facts on disk, never plans. Spawn **synthesis writer**
+owning exactly the synthesis chapter file `chapters/<id>.tex` (the Job-Card row marked
+`synthesis=yes`, usually ch0) plus its own-prefixed figure files. Before writing a word
+it MUST read every drafted chapter file, `OUT/contract.md`, and the section headers of
+`OUT/numbers.md`. Its brief IS the design spec — embed this in the prompt:
+
+> Section I is the notes' FIRST chapter: a PRL-style standalone article that replaces any
+> prologue. Physics-first storytelling; the FIRST paragraph answers why-it-matters;
+> intuition and "what is the physics behind this" throughout. Every major theorem of the
+> whole notes appears as a FORMAL STATEMENT — precise assumptions + conclusion, a real
+> theorem environment, NO proof, no mechanism footnote — embedded at the story's
+> load-bearing points, so the COMPLETE LOGICAL CHAIN (what implies what, via which
+> assumption) is visible at a glance. Objects pay only a working-definition tax: 1–2
+> lines, precise enough to parse the formal statement, plus a pointer to the rigorous
+> definition in the body. Proofs, proof-sketch levers, and NUMBERS stay in the body
+> chapters. Exactly two figures: (1) a theorem-dependency DAG whose nodes carry the
+> section numbers where the proofs/details live; (2) ONE no-numbers phenomenon/mechanism
+> story schematic — numeric figures stay in the body. Provide reader-type reading routes
+> (e.g. user / verifier / teacher paths). Length: 8–12 pages for a ~100–130-page note;
+> scale with content, one-sitting readable. FORBIDDEN GENES: novelty-selling tone
+> ("first ever", breakthrough talk), citation politics, and compression pain ("it can be
+> shown"). SUCCESS TEST (the D-test): a reader of Section I ALONE can say "I believe /
+> don't believe the paper's central claim, because …" — judgment powered by the logical
+> chain, not by proof details or numbers.
+
+Self-check via `bash "OUT/compile_one.sh" "OUT/chapters/<id>.tex"` to PASS. Result:
+`_agents/synthesis.result.md` (FIX format).
+
+**Barrier**, then spawn one adversarial **synthesis verifier** (fresh context; the §3.2
+reviewer failure rules apply — never silently treat a dead verifier as "no findings").
+It runs a D-test proxy checklist: (a) the first paragraph answers why-it-matters;
+(b) every major theorem of the notes appears as a formal statement — assumptions +
+conclusion, real theorem environment, proof-free, footnote-free; (c) the logical chain is
+complete and explicit — no orphan theorems, no unstated assumptions; (d) every symbol in
+a formal statement is parseable from the working definitions given; (e) each working
+definition points to its rigorous body definition; (f) no numbers, no proofs, no
+forbidden genes; (g) the DAG's section tags match where the proofs actually live;
+(h) verdict: could a reader of this chapter ALONE judge the paper's central claim?
+Result: `_agents/verify_synth.result.md` (FINDINGS format; `NO FINDINGS` allowed).
+
+If findings exist, spawn a **synthesis fixer** on the same chapter file — result:
+`_agents/synthfix.result.md` (FIX format). At the barrier dispatch exactly ONE
+`build_all.sh` run (fixers never run it themselves, per the §4 scheduling rules), so
+Phase E starts from a clean full build that includes Section I. Rubric note: the Phase G
+referee judges Section I inside the EXISTING dimensions 1 (Self-containedness) and 7
+(Pedagogical flow) — violations cost points there and may be filed as blockers; there is
+no seventh hard gate and no weight change.
 
 ### Phase E — Professional typesetting layer (1 worker, barrier)
 
@@ -422,7 +479,8 @@ AND tell the user: mode, accepted verdict, final score + gates, typeset status
 Cheap first pass for early iteration. Trims: the three C2 lenses collapse into ONE
 combined math+numeric+pedagogy worker per chapter (result:
 `_agents/verify_<id>_all.result.md`); a single referee round; Phase F skipped. **Never
-trims:** Phase B including the independent audit, clean three-pass builds, or Phase E.
+trims:** Phase B including the independent audit, Phase D2 (Synthesis, including its
+verifier), clean three-pass builds, or Phase E.
 Output is explicitly **draft grade — rubric compliance not claimed**; label it so in the
 final report.
 
@@ -444,10 +502,10 @@ final report.
 
 ---
 
-*Provenance: framework-neutral port of the paper2notes Claude Code skill (v2.1.1,
+*Provenance: framework-neutral port of the paper2notes Claude Code skill (v2.3.0,
 github.com/Shiling42/paper2notes); the phase plan mirrors
 `references/build_workflow_template.js` one-for-one (Scaffold, Example+audit, Draft/
-3-lens-Verify/Fix, Assemble, Typeset, Figures, Referee-loop, Final). The method was
+3-lens-Verify/Fix, Assemble, Synthesis, Typeset, Figures, Referee-loop, Final). The method was
 distilled from a real run that expanded a terse ~11-page PRX paper into a 131-page
 professionally typeset lecture note (clean build, all six hard gates green, referee
 95/100, ~70 agents / ~3.5 h).*

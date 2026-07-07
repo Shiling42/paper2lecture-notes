@@ -45,13 +45,13 @@ referee targets; partial credit is the referee's judgment of how far short the n
 
 | # | Dimension | Wt | Full marks = |
 |---|-----------|----|--------------|
-| 1 | **Self-containedness** | 15 | A reader with only the paper's *prerequisite* background (the audience fixed in `contract.md` — e.g. "basic Mpemba + UG linear algebra/Markov") follows every step end to end. Nothing is used before it is defined; no forward dependency; no "as is well known." |
+| 1 | **Self-containedness** | 15 | A reader with only the paper's *prerequisite* background (the audience fixed in `contract.md` — e.g. "basic Mpemba + UG linear algebra/Markov") follows every step end to end. Nothing is used before it is defined; no forward dependency; no "as is well known." **Section I test:** the opening synthesis article (Section I) *alone* lets this target reader judge the paper's central claim ("I believe / don't believe, because …") — every major theorem of the notes appears as a formal statement (precise assumptions + conclusion, no proof) at the story's load-bearing points, forming a complete logical chain (what implies what, via which assumption), with each object given only a 1–2-line working definition plus a pointer to its rigorous definition in the body. |
 | 2 | **Concept depth** | 15 | Every *named, load-bearing* object the paper merely cites is built from scratch — definition, physical intuition, *and* a small concrete verification (a tiny example, a sanity check, a limiting case). Nothing imported as a black box. |
 | 3 | **Theorem expansion** | 15 | Every theorem / lemma / proposition / corollary has: explicit assumptions, a stated intuition, a **gap-free** step-by-step proof, and an explicit note of *where each assumption is used*. No "it can be shown," no proof-by-citation, no hidden lemma. |
 | 4 | **Worked example & operationality** | **20** | The **primary running example** (non-degenerate — see Gate 6) is carried through *every core chapter*, with **every intermediate number** shown, from raw setup to final answer. At least one instance is small enough to do **fully by hand**. A reader can replicate the whole procedure on a *new* instance from the notes alone (an operational checklist is the ideal deliverable). This is the highest-weighted dimension. |
 | 5 | **Correctness** | 15 | Every numeral matches a re-run of the cited script in `numbers.md`; conventions (index/sign/orientation) are internally consistent and correct; zero unresolved correctness flags from the math/numerics review. |
 | 6 | **Visualization** | 10 | Every figure is present, renders, is **visually inspected** by an agent (not just compiled), is publication-grade, and is **PDF only** (never PNG). Each figure has a self-contained caption; numerical figures cite their `numbers.md` entry / script. **Numbers-as-figures:** every *load-bearing* `numbers.md` quantity also appears in at least one figure or professionally typeset table in the chapters — a bare inline numeral is never the *only* presentation of a key result. Full marks require this; violations cost points here (and the referee files them as blockers), but this is a scoring criterion, not a 7th gate. |
-| 7 | **Pedagogical flow / physics-first** | 5 | Each chapter opens with the physical picture / a named application *before* the algebra; the general theorem precedes its example; the whole reads as **one coherent arc**, not stitched fragments. |
+| 7 | **Pedagogical flow / physics-first** | 5 | Each chapter opens with the physical picture / a named application *before* the algebra; the general theorem precedes its example; the whole reads as **one coherent arc**, not stitched fragments. **Section I story:** the opening article reads as a physics-first, PRL-style standalone story — its first paragraph answers why-it-matters, intuition and the physics behind each result run throughout, with no proofs, no novelty-selling tone, and no compression pain ("it can be shown") — and it carries the theorem-dependency DAG (nodes tagged with the section numbers where proofs live) plus reader-type reading routes. |
 | 8 | **Build & reproducibility** | 5 | Compiles clean (`pdflatex ×3`, no unresolved refs/citations, no overfull-box errors that break layout); every number is traceable to a script; a stranger can rebuild the PDF and re-derive the numbers from the repo. |
 
 **Weighting rationale (keep this ordering generic):** the worked example (4) dominates
@@ -115,7 +115,9 @@ Use the rubric as an **automated referee gate**, not a one-shot human read. The 
    (each blocker = the smallest concrete defect: "Thm 5.2 proof skips the
    surjectivity step"; "ω₃ printed as −0.63 but `verify_core.py` gives −0.6301";
    "Fig 4 caption missing script citation"; "concept *winding number* used in §5 but never
-   defined").
+   defined"). Section-I violations (broken logical chain, missing formal statement, proof
+   leakage, missing DAG or reading routes) are filed as blockers scored under dimensions 1
+   and 7 — never as a seventh gate.
 4. **Targeted fixes.** Dispatch each blocker to a narrow fix (one chapter, one figure, one
    number) — do **not** rewrite wholesale. Re-run only what the fix touched.
 5. **Loop** steps 2–4 until **all gates green and score ≥ threshold**. The gates are the

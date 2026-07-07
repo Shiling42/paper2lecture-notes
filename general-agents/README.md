@@ -29,7 +29,7 @@ pipelining, progress UI).
 ## What the LEAD does
 
 Intake (fills the Job Card with you, fail-fast on blanks) → Scaffold → Example +
-independent numeric audit → per-chapter draft ∥ 3 adversarial lenses ∥ fix → Assemble →
+independent numeric audit → per-chapter draft ∥ 3 adversarial lenses ∥ fix → Assemble → Synthesis (Section I: the PRL-style opening article, written from the finished book) →
 professional Typeset layer (sandbox-first, visual check) → figure visual pass → bounded
 referee loop against the 100-pt rubric / 6 hard gates → final reproduction pass.
 File-based results (`OUT/_agents/*.result.md`), dispatch-log crash recovery
@@ -37,7 +37,7 @@ File-based results (`OUT/_agents/*.result.md`), dispatch-log crash recovery
 
 ## Sync note
 
-Generated from skill v2.1.1 and adversarially reviewed against it (16 findings fixed).
+Generated from skill v2.3.0 and adversarially reviewed against it (16 findings fixed).
 When the Claude Code skill updates:
 
 ```bash

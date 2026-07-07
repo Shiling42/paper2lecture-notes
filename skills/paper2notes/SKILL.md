@@ -29,9 +29,9 @@ the `scaffold/` templates, and `new_paper_checklist.md`); this file is the map.
 - A quick summary or literature review → use a research-lit skill.
 - Slides/poster from a paper → use the slides/poster skills.
 
-## Procedure (nine phases)
+## Procedure (ten phases)
 
-Phases 1–2 are yours to do up front; phases 3–9 — **including phase 6's typesetting
+Phases 1–2 are yours to do up front; phases 3–10 — **including phase 7's typesetting
 layer** — are the heavy build, best run by the multi-agent workflow
 (`references/build_workflow_template.js`).
 
@@ -77,7 +77,27 @@ layer** — are the heavy build, best run by the multi-agent workflow
    used-before-defined or cited-not-explained, physics-first). Dispatch each finding to a
    narrow fix; re-compile.
 
-6. **Apply the professional typesetting.** Use **`references/preamble_lecture_notes.tex`**
+6. **Synthesize the opening article (Section I).** Written AFTER all chapters are drafted
+   and assembled — a PRL-style standalone article that *replaces* any separate prologue
+   chapter and opens the notes. The first paragraph answers why-it-matters; intuition and
+   "what is the physics behind this" carry the story throughout. Every major theorem of
+   the notes appears as a formal statement (precise assumptions + conclusion, real theorem
+   environment, no proof) at the story's load-bearing points, forming a complete logical
+   chain — what implies what, via which assumption, visible at a glance. Objects pay only
+   a working-definition tax: 1–2 lines, precise enough to parse the statement, plus a
+   pointer to the rigorous definition in the body. Two guidance devices: a
+   theorem-dependency DAG figure (nodes tagged with the section numbers where the proofs
+   live) and reader-type reading routes (e.g. user / verifier / teacher). Figures: the DAG
+   plus exactly one no-numbers phenomenon/mechanism story schematic — proofs, proof-sketch
+   levers, and numbers stay in the body chapters. Success test: a reader of Section I
+   *alone* can say "I believe / don't believe the paper's central claim, because ...".
+   Length: 8–12 pages for a ~100–130-page note, one-sitting readable. Forbidden genes:
+   novelty-selling tone, citation politics, and "it can be shown" compression. The
+   workflow's **Synthesis** stage (between Assemble and Typeset) automates this; the
+   chapter is marked `synthesis:true` in CHAPTERS, so the per-chapter drafting pipeline
+   skips it.
+
+7. **Apply the professional typesetting.** Use **`references/preamble_lecture_notes.tex`**
    and **`references/typesetting_guide.md`**. The load-bearing move: **layer the look on
    top of finished content** — back up the plain preamble, then upgrade *only* the preamble
    (Palatino text+math, sans headings, colored left-barred theorem boxes, faded
@@ -86,12 +106,12 @@ layer** — are the heavy build, best run by the multi-agent workflow
    Wrap amsthm with `\tcolorboxenvironment`; never convert to `\newtcbtheorem` (changes the
    calling convention and breaks every chapter). If a compile breaks, fix the offending
    chapter construct — never "simplify" the design away. The workflow's **Typeset** phase
-   (between Assemble and Figures) automates exactly this discipline — back up the plain
+   (between Synthesis and Figures) automates exactly this discipline — back up the plain
    preamble, swap the professional one into a full sandbox copy, three-pass build,
    `pdftoppm`-render the title page / a chapter opener / a theorem page and *look*, only
    then apply live; the manual path above stays the fallback for by-hand runs.
 
-7. **Figures.** Use **`references/figure_techniques.md`**. Two tracks: *if a human could
+8. **Figures.** Use **`references/figure_techniques.md`**. Two tracks: *if a human could
    draw it on a whiteboard from memory, it's TikZ; if it requires running code, it's a
    matplotlib PDF.* Eleven reusable archetypes: seven TikZ classics (network-with-cut,
    motif gallery, sign strip, function-with-roots, complex-plane contour, integer
@@ -104,7 +124,7 @@ layer** — are the heavy build, best run by the multi-agent workflow
    every figure: build a standalone, rasterize with `pdftoppm`, **actually look at the
    pixels**, fix, repeat.
 
-8. **Referee gate + remediation.** Re-derive ground truth, build (`pdflatex ×3`), and have
+9. **Referee gate + remediation.** Re-derive ground truth, build (`pdflatex ×3`), and have
    a strict referee score the rubric and check each hard gate — the dimensions, gates, and
    pass thresholds live in **`references/acceptance_rubric.md`**, the single source of
    truth (not restated here). Dispatch each blocker to a targeted fix (one chapter / one
@@ -112,7 +132,7 @@ layer** — are the heavy build, best run by the multi-agent workflow
    score clears the threshold. Gates are the real exit condition; the score guards quality
    above them.
 
-9. **Reproduce every number and finish.** Re-run every cited script; confirm
+10. **Reproduce every number and finish.** Re-run every cited script; confirm
    `numbers.md` ↔ chapters ↔ scripts all agree. Do a final figure pass, fix any missing
    bibliography / undefined refs, and run the final clean three-pass build.
 
@@ -120,6 +140,9 @@ layer** — are the heavy build, best run by the multi-agent workflow
 
 - **General theorem first, example second.** State and prove each result at full
   generality, *then* illustrate. The example illustrates; it never replaces the theorem.
+- **The opening chapter is an article, written last.** Section I is a PRL-style synthesis
+  of the finished notes: a reader of it alone can judge the paper's central claim; it is
+  synthesized from the drafted chapters, never from the plan.
 - **One source of truth for numbers.** Every numeral comes from a single `numbers.md`
   generated by runnable code and cross-checked. The prettiest box around a wrong number is
   still wrong.
@@ -150,14 +173,15 @@ layer** — are the heavy build, best run by the multi-agent workflow
 
 ## Heavy multi-agent build
 
-For the phase 3–9 build, adapt and launch **`references/build_workflow_template.js`** with
+For the phase 3–10 build, adapt and launch **`references/build_workflow_template.js`** with
 the **Workflow** tool (not plain node). Edit only its CONFIG block (paths, topic/audience,
 standards, concepts, example spec, chapters, rubric, plus the optional `SKILLREF` and
 `MODE` knobs); the pipelined phase code
-(scaffold → example → draft → 3-lens verify → assemble → typeset → figures → referee loop)
-is project-agnostic and runs unchanged. The stages cover phases 3–9 **including phase 6**:
-Scaffold = 3, Example = 4, Draft + Verify = 5, Typeset = 6, Figures = 7, Referee = 8, with
-Assemble and the referee loop together covering 9's reproduce-and-finish. Set `SKILLREF`
+(scaffold → example → draft → 3-lens verify → assemble → synthesize → typeset → figures →
+referee loop) is project-agnostic and runs unchanged. The stages cover phases 3–10
+**including phase 7**: Scaffold = 3, Example = 4, Draft + Verify = 5, Synthesis = 6,
+Typeset = 7, Figures = 8, Referee = 9, with Assemble and the referee loop together
+covering 10's reproduce-and-finish. Set `SKILLREF`
 to this skill's root so Phase A adapts the shipped `references/scaffold/` templates and
 the Typeset phase uses `references/preamble_lecture_notes.tex` directly, instead of
 regenerating either from prose.
@@ -169,9 +193,9 @@ referee loop bound (`MAX_REFEREE_ROUNDS`).
 **Mode knob.** `MODE: 'light'` is a cheap first pass: one *combined*
 math+numeric+pedagogy verification lens per chapter instead of three parallel lenses, a
 single referee round, and no figure-review loop. Light never trims the numbers ground
-truth (including the independent audit), clean three-pass builds, or the Typeset phase —
-and its output is explicitly labeled "draft grade — rubric compliance not claimed". The
-default, `'full'`, is the rubric-grade build.
+truth (including the independent audit), clean three-pass builds, the Synthesis stage, or
+the Typeset phase — and its output is explicitly labeled "draft grade — rubric compliance
+not claimed". The default, `'full'`, is the rubric-grade build.
 
 ## Worked case study (the Mpemba run)
 
